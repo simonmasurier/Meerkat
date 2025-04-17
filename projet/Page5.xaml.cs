@@ -22,9 +22,9 @@ namespace projet
     /// </summary>
     public partial class Page5 : Page
     {
-        ArrayList list = new ArrayList();
-        ArrayList erreurs = new ArrayList();
-        ArrayList rows = new ArrayList();
+        private List<string> list = new List<string>();
+        private List<string> erreurs = new List<string>();
+        private List<int> rows = new List<int>();
         public Page5()
         {
             InitializeComponent();
@@ -117,40 +117,51 @@ namespace projet
 
         private void worker_DoWork(object sender, DoWorkEventArgs e)
         {
-            erreurs.Clear();
-            rows.Clear();
-            var worker = sender as BackgroundWorker;
-            worker.ReportProgress(5, "Ouverture du planning");
-
-
-            //Excel excel = new Excel(@"P:\Logistique et Planning cdes\PLANNING Cdes\TEST.xlsx", 1);
-            //Excel excel = new Excel(@"J:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx", 1);
-            Excel excel = new Excel(@"C:\Users\Simon\Documents\Meerkat\test.xlsx", 1);
-
-            int range = excel.GetRange();
-
-            for (int j = 0; j < list.Count; j++)
+            try
             {
-                int flag = 0;
-                for (int i = 2; i <= range; i++)
+                erreurs.Clear();
+                rows.Clear();
+                var worker = sender as BackgroundWorker;
+                worker.ReportProgress(5, "Ouverture du planning");
+
+
+                //Excel excel = new Excel(@"P:\Logistique et Planning cdes\PLANNING Cdes\TEST.xlsx", 1);
+                //Excel excel = new Excel(@"J:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx", 1);
+                Excel excel = new Excel(@"C:\Users\Simon\Documents\Meerkat\test.xlsx", 1);
+
+                int range = excel.GetRange();
+                int progressInterval = 20;
+                 
+                for (int j = 0; j < list.Count; j++)
                 {
-                    var value = ((double)i / range) * 100;
-                    var pc = Convert.ToInt32(Math.Round(value, 0));
-                    worker.ReportProgress(pc, String.Format("Recherche de la commande : " + (j + 1).ToString() + "/" + list.Count.ToString()));
-                    if (list[j].ToString() == excel.ReadCell(i, 1).ToString())
+                    int flag = 0;
+                    for (int i = 2; i <= range; i++)
                     {
-                        flag = 1;
-                        rows.Add(i);
-                        break;
+                        if (i % progressInterval == 0)
+                        {
+                            var value = ((double)i / range) * 100;
+                            var pc = Convert.ToInt32(Math.Round(value, 0));
+                            worker.ReportProgress(pc, $"Recherche de la commande : {j + 1}/{list.Count}");
+                        }
+                        if (list[j].ToString() == excel.ReadCell(i, 1).ToString())
+                        {
+                            flag = 1;
+                            rows.Add(i);
+                            break;
+                        }
+                    }
+                    if (flag == 0)
+                    {
+                        erreurs.Add(list[j]);
                     }
                 }
-                if (flag == 0)
-                {
-                    erreurs.Add(list[j]);
-                }
+                worker.ReportProgress(100, String.Format("Recherche Terminée"));
+                excel.CloseFile();
             }
-            worker.ReportProgress(100, String.Format("Recherche Terminée"));
-            excel.CloseFile();
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error : {ex.Message}");
+            }
         }
 
         private void worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)

@@ -22,25 +22,25 @@ namespace projet
     /// </summary>
     public partial class Page4 : Page
     {
-        ArrayList saved = new ArrayList();
+        List<string> saved = new List<string>();
         public Page4()
         {
             InitializeComponent();
             Progress.Visibility = Visibility.Hidden;
             Saving.Visibility = Visibility.Hidden;
             name.Text = App.Current.Properties["Name"].ToString();
-            ArrayList commandes = new ArrayList();
-            ArrayList rows = new ArrayList();
-            ArrayList pièces = new ArrayList();           
-            rows = App.Current.Properties["Rows"] as ArrayList;
-            commandes = App.Current.Properties["Array"] as ArrayList;
-            
+            List<string> commandes = new List<string>();
+            List<int> rows = new List<int>();
+            List<int> pièces = new List<int>();
+            rows = App.Current.Properties["Rows"] as List<int>;
+            commandes = App.Current.Properties["Array"] as List<string>;
+
             //Excel excel = new Excel(@"P:\Logistique et Planning cdes\PLANNING Cdes\TEST.xlsx", 1);
             //Excel excel = new Excel(@"J:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx", 1);
             Excel excel = new Excel(@"C:\Users\Simon\Documents\Meerkat\test.xlsx", 1);
 
-            ArrayList rowIndex = new ArrayList();
-            ArrayList toutesCommandes = new ArrayList();
+            List<int> rowIndex = new List<int>();
+            List<int> toutesCommandes = new List<int>();
             int count = -1;
             for (int i = 0; i < commandes.Count; i++)
             {
