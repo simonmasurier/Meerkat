@@ -143,6 +143,7 @@ namespace projet
                             var pc = Convert.ToInt32(Math.Round(value, 0));
                             worker.ReportProgress(pc, $"Recherche de la commande : {j + 1}/{list.Count}");
                         }
+                        //Numéro Commande
                         if (list[j].ToString() == excel.ReadCell(i, 1).ToString())
                         {
                             flag = 1;

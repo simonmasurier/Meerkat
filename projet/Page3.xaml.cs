@@ -132,6 +132,16 @@ namespace projet
                 //Excel excel = new Excel(@"J:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx", 1);
                 Excel excel = new Excel(@"C:\Users\Simon\Documents\Meerkat\test.xlsx", 1);
                 
+                int num_commande_column = 1;
+                try
+                {
+                    num_commande_column = excel.GetColumnNumber("N° Cde");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error : {ex.Message}");
+                }
+
                 int range = excel.GetRange(); ;
                 int progressInterval = 20;
 
@@ -146,7 +156,8 @@ namespace projet
                             var pc = Convert.ToInt32(Math.Round(value, 0));
                             worker.ReportProgress(pc, $"Recherche de la commande : {j + 1}/{list.Count}");
                         }
-                        if (list[j].ToString() == excel.ReadCell(i, 1).ToString())
+                        //Numéro Commande
+                        if (list[j].ToString() == excel.ReadCell(i, num_commande_column).ToString())
                         {
                             flag = 1;
                             rows.Add(i);

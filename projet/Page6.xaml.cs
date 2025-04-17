@@ -52,6 +52,22 @@ namespace projet
                 //Excel excel = new Excel(@"P:\Logistique et Planning cdes\PLANNING Cdes\TEST.xlsx", 1);
                 //Excel excel = new Excel(@"J:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx", 1);
                 Excel excel = new Excel(@"C:\Users\Simon\Documents\Meerkat\test.xlsx", 1);
+                
+                try
+                {
+                    int columnNumbers = excel.GetColumnNumber("");
+                    int soudure_prevue_column = 0;
+                }
+                catch
+                {
+                    int soudure_prevue_column = 0;
+                    int decoupe_column = 0;
+                    int pliage_column = 0;
+                    int soudure_column = 0;
+                    int traitement_column = 0;
+                    int depart_column = 0;
+                }
+
                 ArrayList rowIndex = new ArrayList();
                 int count = -1;
                 for (int i = 0; i < commandes.Count; i++)
@@ -59,6 +75,7 @@ namespace projet
                     count++;
                     int row = int.Parse(rows[i].ToString());
                     toutesCommandes.Add(row);
+                    //Numéro Commande
                     while (excel.ReadCell(row + 1, 1) == excel.ReadCell(row, 1))
                     {
                         row++;
@@ -83,6 +100,7 @@ namespace projet
                     string soudure = "Soudure" + i.ToString();
                     string traitement = "Traitement" + i.ToString();
 
+                    //Numéro Commande
                     TextBlock commandeText = TextGrid(excel.ReadCell(row0, 1));
                     Viewbox view = new Viewbox
                     {
@@ -92,7 +110,8 @@ namespace projet
                     view.Child = commandeText;
                     AddViewBox(i, 0, view);
 
-                    TextBlock clientText = TextGrid(excel.ReadCell(row0, 3));//changé
+                    //Client
+                    TextBlock clientText = TextGrid(excel.ReadCell(row0, 3));
                     Viewbox view2 = new Viewbox
                     {
                         Width = 130,
@@ -101,7 +120,8 @@ namespace projet
                     view2.Child = clientText;
                     AddViewBox(i, 1, view2);
 
-                    TextBlock designText = TextGrid(excel.ReadCell(row0, 5));//changé
+                    //Désignation
+                    TextBlock designText = TextGrid(excel.ReadCell(row0, 5));
                     Viewbox view3 = new Viewbox
                     {
                         Width = 180,
@@ -110,7 +130,8 @@ namespace projet
                     view3.Child = designText;
                     AddViewBox(i, 2, view3);
 
-                    TextBlock planText = TextGrid(excel.ReadCell(row0, 6));//changé
+                    //Référence
+                    TextBlock planText = TextGrid(excel.ReadCell(row0, 6));
                     Viewbox view4 = new Viewbox
                     {
                         Width = 180,
@@ -119,7 +140,8 @@ namespace projet
                     view4.Child = planText;
                     AddViewBox(i, 3, view4);
 
-                    TextBlock quantitéText = TextGrid(excel.ReadCell(row0, 7));//changé
+                    //Quantité
+                    TextBlock quantitéText = TextGrid(excel.ReadCell(row0, 7));
                     Viewbox view5 = new Viewbox
                     {
                         Width = 80,
@@ -128,9 +150,6 @@ namespace projet
                     view5.Child = quantitéText;
                     AddViewBox(i, 4, view5);
 
-                    //AddTextGrid(i, 0, excel.ReadCell(row0, 1)); //Commande
-                    //AddTextGrid(i, 1, excel.ReadCell(row0, 4)); //Designation
-                    //AddTextGrid(i, 2, excel.ReadCell(row0, 5)); //Plan
                     //DECOUPE
                     if (excel.GetColor(row0, 12) == 0)//Terminé //changé
                     {
@@ -557,8 +576,9 @@ namespace projet
                     string traitement_flag = traitement_list[i].ToString();
                     if (GetState(5 + 9 * i) != decoupe_flag)
                     {
+                        //Découpe
                         row.Add(row2);
-                        column.Add(22);//changé
+                        column.Add(22);
                         if (GetState(5 + 9 * i) == "À Faire")
                         {
                             //excel.FillRed(row2, 11);
@@ -584,10 +604,11 @@ namespace projet
                             content.Add(name + " :" + "\nÀ faire - " + date);
                         }
                     }
+                    //Pliage
                     if (GetState(6 + 9 * i) != pliage_flag)
                     {
                         row.Add(row2);
-                        column.Add(23);//changé
+                        column.Add(23);
                         if (GetState(6 + 9 * i) == "À Faire")
                         {
                             //excel.FillRed(row2, 12);
@@ -614,12 +635,13 @@ namespace projet
                             content.Add(name + " :" + "\nÀ faire - " + date);
                         }
                     }
+                    //Soudure
                     if (int.Parse(soudureList[i].ToString()) == 1)
                     {
                         if (GetState(7 + 9 * i) != soudure_flag)
                         {
                             row.Add(row2);
-                            column.Add(24);//changé
+                            column.Add(24);
                             if (GetState(7 + 9 * i) == "À Faire")
                             {
                                 //excel.FillRed(row2, 13);
@@ -649,14 +671,15 @@ namespace projet
                     else
                     {
                         row.Add(row2);
-                        column.Add(24);//changé
+                        column.Add(24);
                         color.Add("White");
                         content.Add("");
                     }
+                    //Traitement
                     if (GetState(8 + 9 * i) != traitement_flag)
                     {
                         row.Add(row2);
-                        column.Add(25);//changé
+                        column.Add(25);
                         if (GetState(8 + 9 * i) == "À Faire")
                         {
                             color.Add("Red");

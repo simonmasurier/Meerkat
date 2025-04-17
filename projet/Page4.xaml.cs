@@ -39,6 +39,24 @@ namespace projet
             //Excel excel = new Excel(@"J:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx", 1);
             Excel excel = new Excel(@"C:\Users\Simon\Documents\Meerkat\test.xlsx", 1);
 
+            int num_commande_column = 1;
+            int client_column = 3;
+            int designation_column = 5;
+            int reference_column = 6;
+            int qte_column = 7;
+            try
+            {
+                num_commande_column = excel.GetColumnNumber("N° Cde");
+                client_column = excel.GetColumnNumber("CLIENT");
+                designation_column = excel.GetColumnNumber("DESIGNATION");
+                reference_column = excel.GetColumnNumber("REFERENCE");
+                qte_column = excel.GetColumnNumber("QTE");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error : {ex.Message}");
+            }
+
             List<int> rowIndex = new List<int>();
             List<int> toutesCommandes = new List<int>();
             int count = -1;
@@ -47,7 +65,7 @@ namespace projet
                 count++;
                 int row = int.Parse(rows[i].ToString());
                 toutesCommandes.Add(row);
-                while (excel.ReadCell(row + 1, 1) == excel.ReadCell(row, 1))
+                while (excel.ReadCell(row + 1, num_commande_column) == excel.ReadCell(row, num_commande_column))
                 {
                     row++;
                     count++;
@@ -69,7 +87,7 @@ namespace projet
             for (int i=0;i<toutesCommandes.Count;i++)
             {
                 int row = int.Parse(toutesCommandes[i].ToString());
-                TextBlock commandeText = TextGrid(excel.ReadCell(row, 1));
+                TextBlock commandeText = TextGrid(excel.ReadCell(row, num_commande_column));
                 Viewbox view = new Viewbox
                 {
                     MaxWidth = 120,
@@ -78,7 +96,7 @@ namespace projet
                 view.Child = commandeText;
                 AddViewBox(i, 0, view);
 
-                TextBlock clientText = TextGrid(excel.ReadCell(row, 3)); //changé
+                TextBlock clientText = TextGrid(excel.ReadCell(row, client_column)); 
                 Viewbox view2 = new Viewbox
                 {
                     MaxWidth = 230,
@@ -87,7 +105,7 @@ namespace projet
                 view2.Child = clientText;
                 AddViewBox(i, 1, view2);
 
-                TextBlock designText = TextGrid(excel.ReadCell(row, 5)); //changé
+                TextBlock designText = TextGrid(excel.ReadCell(row, designation_column)); 
                 Viewbox view3 = new Viewbox
                 {
                     MaxWidth = 230,
@@ -96,7 +114,7 @@ namespace projet
                 view3.Child = designText;
                 AddViewBox(i, 2, view3);
 
-                TextBlock planText = TextGrid(excel.ReadCell(row, 6)); //changé
+                TextBlock planText = TextGrid(excel.ReadCell(row, reference_column)); 
                 Viewbox view4 = new Viewbox
                 {
                     MaxWidth = 230,
@@ -105,7 +123,7 @@ namespace projet
                 view4.Child = planText;
                 AddViewBox(i, 3, view4);
 
-                TextBlock quantitéText = TextGrid(excel.ReadCell(row, 7));//changé
+                TextBlock quantitéText = TextGrid(excel.ReadCell(row, qte_column));
                 Viewbox view5 = new Viewbox
                 {
                     MaxWidth = 120,
@@ -114,9 +132,6 @@ namespace projet
                 view5.Child = quantitéText;
                 AddViewBox(i, 4, view5);
 
-                //AddTextGrid(i, 0, excel.ReadCell(row,1));
-                //AddTextGrid(i, 1, excel.ReadCell(row,4));
-                //AddTextGrid(i, 2, excel.ReadCell(row, 5));
                 string name = "btn" + row.ToString();
                 AddBtn(i, 5,excel.IsSent(row),name);      
             }
@@ -273,13 +288,24 @@ namespace projet
             //Excel excel = new Excel(@"P:\Logistique et Planning cdes\PLANNING Cdes\TEST.xlsx", 1);
             //Excel excel = new Excel(@"J:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx", 1);
             Excel excel = new Excel(@"C:\Users\Simon\Documents\Meerkat\test.xlsx", 1);
+
+            int depart_column = 16;
+            
+            try
+            {
+                depart_column = excel.GetColumnNumber("DEPART");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error : {ex.Message}");
+            }
             int i = 0;
             foreach (object item in saved)
             {
                 var value = ((double)i / saved.Count) * 100;
                 var pc = Convert.ToInt32(Math.Round(value, 0));
                 worker.ReportProgress(pc, String.Format("Sauvegarde"));
-                excel.WriteDate(int.Parse(item.ToString()), 16, DateTime.Now.Date); //changé
+                excel.WriteDate(int.Parse(item.ToString()), depart_column, DateTime.Now.Date); 
                 i++;
 
             }          

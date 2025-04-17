@@ -17,6 +17,7 @@ namespace projet
         _Excel.Application excel = new _Excel.Application();
         Workbook wb;
         Worksheet ws;
+        private Dictionary<string, int> columnNumbers = new Dictionary<string, int>();
 
         public Excel (string path, int sheet)
         {
@@ -227,6 +228,7 @@ namespace projet
         }
         public bool IsSent(int i)
         {
+            //Départ Livraison
             if (ws.Cells[i,16].Value2 != null)
             {
                 return true;
@@ -287,6 +289,24 @@ namespace projet
                 GC.WaitForPendingFinalizers();
             }
         }
+        public int GetColumnNumber(string title_target)
+        {
+            // Suppose que la première ligne contient les titres de colonnes
+            var firstRow = ws.Rows[1];  // Récupérer la première ligne (titres)
+            int column = 1;
 
+            for (int i = 1; i <= firstRow.Columns.Count; i++)
+            {
+                string title = firstRow.Cells[1, i].Value2.ToString().Trim();
+
+                // Vérifier si le titre correspond à un des titres recherchés
+                if (title == title_target)
+                {
+                    column = i;
+                    break;
+                }
+            }
+            return column;
+        }
     }
 }
