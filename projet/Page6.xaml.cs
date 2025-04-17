@@ -35,13 +35,16 @@ namespace projet
         private List<string> traitement_list = new List<string>();
 
         private List<int> soudureList = new List<int>();
+        private List<int> traitementList = new List<int>();
 
         private int num_commande_column = 1;
         private int client_column = 3;
         private int designation_column = 5;
         private int reference_column = 6;
         private int qte_column = 7;
+
         private int soudure_prevue_column = 10;
+        private int traitement_prevu_column = 11;
         private int decoupe_column = 12;
         private int pliage_column = 13;
         private int soudure_column = 14;
@@ -81,7 +84,9 @@ namespace projet
                     designation_column = excel.GetColumnNumber("DESIGNATION");
                     reference_column = excel.GetColumnNumber("REFERENCE");
                     qte_column = excel.GetColumnNumber("QTE");
+
                     soudure_prevue_column = excel.GetColumnNumber("SOUDURE PREVUE");
+                    traitement_prevu_column = excel.GetColumnNumber("TRAITEMENT PREVU");
                     decoupe_column = excel.GetColumnNumber("DECOUPE");
                     pliage_column = excel.GetColumnNumber("PLIAGE");
                     soudure_column = excel.GetColumnNumber("SOUDURE");
@@ -185,7 +190,7 @@ namespace projet
                     AddViewBox(i, 4, view5);
 
                     //DECOUPE
-                    if (excel.GetColor(row0, decoupe_column) == 0)//Terminé //changé
+                    if (excel.GetColor(row0, decoupe_column) == 0)//Terminé
                     {
                         decoupe_list.Add("Terminé");
                         AddBtn(i, 5, 0, decoupe);
@@ -207,7 +212,7 @@ namespace projet
                         AddBtn(i, 5, 2, decoupe);
                     }
                     //PLIAGE
-                    if (excel.GetColor(row0, pliage_column) == 0)//Terminé //changé
+                    if (excel.GetColor(row0, pliage_column) == 0)//Terminé 
                     {
                         pliage_list.Add("Terminé");
                         AddBtn(i, 6, 0, pliage);
@@ -229,15 +234,15 @@ namespace projet
                         AddBtn(i, 6, 2, pliage);
                     }
                     //SOUDURE
-                    if (excel.SoudurePrévue(row0, soudure_prevue_column))//changé
+                    if (excel.SoudurePrévue(row0, soudure_prevue_column))
                     {
                         soudureList.Add(1);
-                        if (excel.GetColor(row0, soudure_column) == 0)//Terminé //changé
+                        if (excel.GetColor(row0, soudure_column) == 0)//Terminé 
                         {
                             soudure_list.Add("Terminé");
                             AddBtn(i, 7, 0, soudure);
                         }
-                        else if (excel.GetColor(row0, soudure_column) == 1)//En Cours //changé
+                        else if (excel.GetColor(row0, soudure_column) == 1)//En Cours 
                         {
                             soudure_list.Add("En Cours");
                             AddBtn(i, 7, 1, soudure);
@@ -261,26 +266,36 @@ namespace projet
                         AddText(i, 7, "PAS DE SOUDURE");
                     }
                     //TRAITEMENT
-                    if (excel.GetColor(row0, traitement_column) == 0)//Terminé //changé
+                    if (excel.SoudurePrévue(row0, traitement_prevu_column))
                     {
-                        traitement_list.Add("Terminé");
-                        AddBtn(i, 8, 0, traitement);
-                    }
-                    else if (excel.GetColor(row0, traitement_column) == 1)//En Cours
-                    {
-                        traitement_list.Add("En Cours");
-                        AddBtn(i, 8, 1, traitement);
-                    }
-                    else if (excel.GetColor(row0, traitement_column) == 2)//A Faire
-                    {
-                        traitement_list.Add("À Faire");
-                        AddBtn(i, 8, 2, traitement);
+                        traitementList.Add(1);
+                        if (excel.GetColor(row0, traitement_column) == 0)//Terminé 
+                        {
+                            traitement_list.Add("Terminé");
+                            AddBtn(i, 8, 0, traitement);
+                        }
+                        else if (excel.GetColor(row0, traitement_column) == 1)//En Cours
+                        {
+                            traitement_list.Add("En Cours");
+                            AddBtn(i, 8, 1, traitement);
+                        }
+                        else if (excel.GetColor(row0, traitement_column) == 2)//A Faire
+                        {
+                            traitement_list.Add("À Faire");
+                            AddBtn(i, 8, 2, traitement);
+                        }
+                        else
+                        {
+                            excel.FillRed(row0, traitement_column);
+                            traitement_list.Add("À Faire");
+                            AddBtn(i, 8, 2, traitement);
+                        }
                     }
                     else
                     {
-                        excel.FillRed(row0, traitement_column);
-                        traitement_list.Add("À Faire");
-                        AddBtn(i, 8, 2, traitement);
+                        traitementList.Add(0);
+                        traitement_list.Add("");
+                        AddText(i, 8, "PAS DE TRAIT.");
                     }
                 }
                 excel.CloseSave();
@@ -586,7 +601,7 @@ namespace projet
             Saving.Text = "Veuillez patienter";
             Sauvegarde();
         }
-        private void Sauvegarde()
+        private void Sauvegarde() //ERREUR ICI !!!!
         {
             try
             {
@@ -603,11 +618,17 @@ namespace projet
                     string decoupe_flag = decoupe_list[i].ToString();
                     string pliage_flag = pliage_list[i].ToString();
                     string soudure_flag = "";
+                    string traitement_flag = "";
+
                     if (int.Parse(soudureList[i].ToString()) == 1)
                     {
                         soudure_flag = soudure_list[i].ToString();
                     }
-                    string traitement_flag = traitement_list[i].ToString();
+                    if (int.Parse(traitementList[i].ToString()) == 1)
+                    {
+                        traitement_flag = soudure_list[i].ToString();
+                    }
+
                     if (GetState(5 + 9 * i) != decoupe_flag)
                     {
                         //Découpe
@@ -662,7 +683,7 @@ namespace projet
                             content.Add(name + " :" + "\nTerminé - " + date);
                         }
                         else
-                        {                            
+                        {
                             //excel.FillRed(row2, 12);
                             color.Add("Red");
                             content.Add(name + " :" + "\nÀ faire - " + date);
@@ -709,34 +730,44 @@ namespace projet
                         content.Add("");
                     }
                     //Traitement
-                    if (GetState(8 + 9 * i) != traitement_flag)
+                    if (int.Parse(traitementList[i].ToString()) == 1)
+                    {
+                        if (GetState(8 + 9 * i) != traitement_flag)
+                        {
+                            row.Add(row2);
+                            column.Add(hist_traitement_column);
+                            if (GetState(8 + 9 * i) == "À Faire")
+                            {
+                                color.Add("Red");
+                                //excel.FillRed(row2, 14);
+                                content.Add(name + " :" + "\nÀ faire - " + date);
+                            }
+                            else if (GetState(8 + 9 * i) == "En Cours")
+                            {
+                                color.Add("Blue");
+                                //excel.FillBlue(row2, 14);
+                                content.Add(name + " :" + "\nEn Cours - " + date);
+                            }
+                            else if (GetState(8 + 9 * i) == "Terminé")
+                            {
+                                color.Add("Green");
+                                //excel.FillGreen(row2, 14);
+                                content.Add(name + " :" + "\nTerminé - " + date);
+                            }
+                            else
+                            {
+                                color.Add("Red");
+                                //excel.FillRed(row2, 14);
+                                content.Add(name + " :" + "\nÀ faire - " + date);
+                            }
+                        }
+                    }
+                    else
                     {
                         row.Add(row2);
                         column.Add(hist_traitement_column);
-                        if (GetState(8 + 9 * i) == "À Faire")
-                        {
-                            color.Add("Red");
-                            //excel.FillRed(row2, 14);
-                            content.Add(name + " :" + "\nÀ faire - " + date);
-                        }
-                        else if (GetState(8 + 9 * i) == "En Cours")
-                        {
-                            color.Add("Blue");
-                            //excel.FillBlue(row2, 14);
-                            content.Add(name + " :" + "\nEn Cours - " + date);
-                        }
-                        else if (GetState(8 + 9 * i) == "Terminé")
-                        {
-                            color.Add("Green");
-                            //excel.FillGreen(row2, 14);
-                            content.Add(name + " :" + "\nTerminé - " + date);
-                        }
-                        else
-                        {
-                            color.Add("Red");
-                            //excel.FillRed(row2, 14);
-                            content.Add(name + " :" + "\nÀ faire - " + date);
-                        }
+                        color.Add("White");
+                        content.Add("");
                     }
                 }
                 BackgroundWorker worker = new BackgroundWorker();
@@ -745,12 +776,12 @@ namespace projet
                 worker.DoWork += worker_DoWork;
                 worker.ProgressChanged += worker_ProgressChanged;
                 worker.RunWorkerAsync();
-
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error : {ex.Message}");
             }
+
         }
         
         private void worker_DoWork(object sender, DoWorkEventArgs e)

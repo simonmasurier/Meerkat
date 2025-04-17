@@ -229,7 +229,8 @@ namespace projet
         public bool IsSent(int i)
         {
             //Départ Livraison
-            if (ws.Cells[i,16].Value2 != null)
+            int depart_column = GetColumnNumber("DEPART");
+            if (ws.Cells[i, depart_column].Value2 != null)
             {
                 return true;
             }
