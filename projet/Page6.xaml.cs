@@ -74,9 +74,8 @@ namespace projet
                 rows = App.Current.Properties["Rows"] as List<int>;
                 commandes = App.Current.Properties["Array"] as List<string>;
 
-                string path1 = @"P:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx.xlsx";
-                string path2 = @"J:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx.xlsx";
-                //string path2 = @"C:\Users\Simon\Documents\Meerkat\test.xlsx";
+                string path1 = Constants.ExcelNetworkPath_J;
+                string path2 = Constants.ExcelNetworkPath_P;
 
                 string fileToOpen = null;
 
@@ -92,7 +91,7 @@ namespace projet
 
                 if (fileToOpen != null)
                 {
-                    Excel excel = new Excel(fileToOpen, 1);
+                    Excel excel = new Excel(fileToOpen, 1, false);
 
                     try
                     {
@@ -814,9 +813,8 @@ namespace projet
                 var worker = sender as BackgroundWorker;
                 worker.ReportProgress(5, String.Format("Ouverture du fichier"));
 
-                string path1 = @"P:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx.xlsx";
-                string path2 = @"J:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx.xlsx";
-                //string path2 = @"C:\Users\Simon\Documents\Meerkat\test.xlsx";
+                string path1 = Constants.ExcelNetworkPath_J;
+                string path2 = Constants.ExcelNetworkPath_P;
 
                 string fileToOpen = null;
 
@@ -832,7 +830,7 @@ namespace projet
 
                 if (fileToOpen != null)
                 {
-                    Excel excel = new Excel(fileToOpen, 1);
+                    Excel excel = new Excel(fileToOpen, 1, false);
 
                     int column_to_fill = 12;
                     int column_to_date = 18;

@@ -19,7 +19,7 @@ namespace projet
         Worksheet ws;
         private Dictionary<string, int> columnNumbers = new Dictionary<string, int>();
 
-        public Excel (string path, int sheet)
+        public Excel (string path, int sheet, bool read_only)
         {
             Object pwd = "bystronic";
             Object MissingValue = System.Reflection.Missing.Value;
@@ -30,7 +30,7 @@ namespace projet
 
             try
             {
-                wb = excel.Workbooks.Open(path, MissingValue, MissingValue, MissingValue, pwd);
+                wb = excel.Workbooks.Open(path, MissingValue, read_only, MissingValue, pwd, MissingValue, true); 
                 wb.Windows[1].WindowState = XlWindowState.xlMinimized;
                 ws = wb.Worksheets[sheet];
             }

@@ -69,8 +69,8 @@ namespace projet
                 string password = (string)e.Argument;
                 worker.ReportProgress(5, "Ouverture du fichier");
 
-                string path1 = @"P:\Logistique et Planning cdes\PLANNING Cdes\identifiants.xlsx";
-                string path2 = @"J:\Logistique et Planning cdes\PLANNING Cdes\identifiants.xlsx";
+                string path1 = Constants.IdNetworkPath_P;
+                string path2 = Constants.IdNetworkPath_J;
                 //string path2 = @"C:\Users\Simon\Documents\Meerkat\id.xlsx";
 
                 string fileToOpen = null;
@@ -87,7 +87,7 @@ namespace projet
 
                 if (fileToOpen != null)
                 {
-                    Excel excel = new Excel(fileToOpen, 1);
+                    Excel excel = new Excel(fileToOpen, 1, true);
                     int range = excel.GetRange();
                     int progressInterval = 20;
 

@@ -129,9 +129,8 @@ namespace projet
                 var worker = sender as BackgroundWorker;
                 worker.ReportProgress(5, "Ouverture du planning");
 
-                string path1 = @"P:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx.xlsx";
-                string path2 = @"J:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx.xlsx";
-                //string path2 = @"C:\Users\Simon\Documents\Meerkat\test.xlsx";
+                string path1 = Constants.ExcelNetworkPath_J;
+                string path2 = Constants.ExcelNetworkPath_P;
 
                 string fileToOpen = null;
 
@@ -147,7 +146,7 @@ namespace projet
 
                 if (fileToOpen != null)
                 {
-                    Excel excel = new Excel(fileToOpen, 1);
+                    Excel excel = new Excel(fileToOpen, 1, true);
 
                     int num_commande_column = 1;
                     try
