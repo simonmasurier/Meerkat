@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -128,49 +129,70 @@ namespace projet
                 var worker = sender as BackgroundWorker;
                 worker.ReportProgress(5, "Ouverture du planning");
 
-                //Excel excel = new Excel(@"P:\Logistique et Planning cdes\PLANNING Cdes\TEST.xlsx", 1);
-                //Excel excel = new Excel(@"J:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx", 1);
-                Excel excel = new Excel(@"C:\Users\Simon\Documents\Meerkat\test.xlsx", 1);
-                
-                int num_commande_column = 1;
-                try
+                string path1 = @"P:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx.xlsx";
+                string path2 = @"J:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx.xlsx";
+                //string path2 = @"C:\Users\Simon\Documents\Meerkat\test.xlsx";
+
+                string fileToOpen = null;
+
+                // Vérifier si l'un des deux fichiers existe
+                if (File.Exists(path1))
                 {
-                    num_commande_column = excel.GetColumnNumber("N° Cde");
+                    fileToOpen = path1;
                 }
-                catch (Exception ex)
+                else if (File.Exists(path2))
                 {
-                    MessageBox.Show($"Error : {ex.Message}");
+                    fileToOpen = path2;
                 }
 
-                int range = excel.GetRange(); ;
-                int progressInterval = 20;
-
-                for (int j = 0; j < list.Count; j++)
+                if (fileToOpen != null)
                 {
-                    int flag = 0;
-                    for (int i = 2; i <= range; i++)
+                    Excel excel = new Excel(fileToOpen, 1);
+
+                    int num_commande_column = 1;
+                    try
                     {
-                        if (i % progressInterval == 0)
+                        num_commande_column = excel.GetColumnNumber("N° Cde");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error : {ex.Message}");
+                    }
+
+                    int range = excel.GetRange(); ;
+                    int progressInterval = 20;
+
+                    for (int j = 0; j < list.Count; j++)
+                    {
+                        int flag = 0;
+                        for (int i = 2; i <= range; i++)
                         {
-                            var value = ((double)i / range) * 100;
-                            var pc = Convert.ToInt32(Math.Round(value, 0));
-                            worker.ReportProgress(pc, $"Recherche de la commande : {j + 1}/{list.Count}");
+                            if (i % progressInterval == 0)
+                            {
+                                var value = ((double)i / range) * 100;
+                                var pc = Convert.ToInt32(Math.Round(value, 0));
+                                worker.ReportProgress(pc, $"Recherche de la commande : {j + 1}/{list.Count}");
+                            }
+                            //Numéro Commande
+                            if (list[j].ToString() == excel.ReadCell(i, num_commande_column).ToString())
+                            {
+                                flag = 1;
+                                rows.Add(i);
+                                break;
+                            }
                         }
-                        //Numéro Commande
-                        if (list[j].ToString() == excel.ReadCell(i, num_commande_column).ToString())
+                        if (flag == 0)
                         {
-                            flag = 1;
-                            rows.Add(i);
-                            break;
+                            erreurs.Add(list[j]);
                         }
                     }
-                    if (flag == 0)
-                    {
-                        erreurs.Add(list[j]);
-                    }
+                    worker.ReportProgress(100, String.Format("Recherche Terminée"));
+                    excel.CloseFile();
                 }
-                worker.ReportProgress(100, String.Format("Recherche Terminée"));
-                excel.CloseFile();
+                else
+                {
+                    MessageBox.Show("Aucun fichier n'a été trouvé aux chemins spécifiés.");
+                }
             }
             catch (Exception ex)
             {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -68,31 +69,52 @@ namespace projet
                 string password = (string)e.Argument;
                 worker.ReportProgress(5, "Ouverture du fichier");
 
-                //Excel excel = new Excel(@"P:\Logistique et Planning cdes\PLANNING Cdes\identifiants.xlsx", 1);
-                //Excel excel = new Excel(@"J:\Logistique et Planning cdes\PLANNING Cdes\identifiants.xlsx", 1);
-                Excel excel = new Excel(@"C:\Users\Simon\Documents\Meerkat\id.xlsx", 1);
-                int range = excel.GetRange();
-                int progressInterval = 20;
+                string path1 = @"P:\Logistique et Planning cdes\PLANNING Cdes\identifiants.xlsx";
+                string path2 = @"J:\Logistique et Planning cdes\PLANNING Cdes\identifiants.xlsx";
+                //string path2 = @"C:\Users\Simon\Documents\Meerkat\id.xlsx";
 
-                for (int i = 2; i <= range; i++)
+                string fileToOpen = null;
+
+                // Vérifier si l'un des deux fichiers existe
+                if (File.Exists(path1))
                 {
-                    if (i % progressInterval == 0)
-                    {
-                        var value = ((double)i / range) * 100;
-                        var pc = Convert.ToInt32(Math.Round(value, 0));
-                        worker.ReportProgress(pc, "Chargement");
-                    }
-                    if (excel.ReadCell(i, 2) == password && password != "")
-                    {
-                        flag = 1;
-                        name = excel.ReadCell(i, 1).ToString();
-                        App.Current.Properties["Name"] = excel.ReadCell(i, 1).ToString();
-                        App.Current.Properties["Password"] = password;
-                        break;
-                    }
+                    fileToOpen = path1;
                 }
-                worker.ReportProgress(100, "Terminé");
-                excel.CloseFile();
+                else if (File.Exists(path2))
+                {
+                    fileToOpen = path2;
+                }
+
+                if (fileToOpen != null)
+                {
+                    Excel excel = new Excel(fileToOpen, 1);
+                    int range = excel.GetRange();
+                    int progressInterval = 20;
+
+                    for (int i = 2; i <= range; i++)
+                    {
+                        if (i % progressInterval == 0)
+                        {
+                            var value = ((double)i / range) * 100;
+                            var pc = Convert.ToInt32(Math.Round(value, 0));
+                            worker.ReportProgress(pc, "Chargement");
+                        }
+                        if (excel.ReadCell(i, 2) == password && password != "")
+                        {
+                            flag = 1;
+                            name = excel.ReadCell(i, 1).ToString();
+                            App.Current.Properties["Name"] = excel.ReadCell(i, 1).ToString();
+                            App.Current.Properties["Password"] = password;
+                            break;
+                        }
+                    }
+                    worker.ReportProgress(100, "Terminé");
+                    excel.CloseFile();
+                }
+                else
+                {
+                    MessageBox.Show("Aucun fichier n'a été trouvé aux chemins spécifiés.");
+                }
             }
             catch (Exception ex)
             {

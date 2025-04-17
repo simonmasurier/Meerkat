@@ -21,7 +21,7 @@ namespace projet
 
         public Excel (string path, int sheet)
         {
-            Object pwd = "password";
+            Object pwd = "bystronic";
             Object MissingValue = System.Reflection.Missing.Value;
             this.path= path;
 
