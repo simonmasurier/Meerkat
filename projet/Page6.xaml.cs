@@ -35,6 +35,27 @@ namespace projet
         private List<string> traitement_list = new List<string>();
 
         private List<int> soudureList = new List<int>();
+
+        private int num_commande_column = 1;
+        private int client_column = 3;
+        private int designation_column = 5;
+        private int reference_column = 6;
+        private int qte_column = 7;
+        private int soudure_prevue_column = 10;
+        private int decoupe_column = 12;
+        private int pliage_column = 13;
+        private int soudure_column = 14;
+        private int traitement_column = 15;
+
+        private int temps_decoupe_column = 18;
+        private int temps_pliage_column = 19;
+        private int temps_soudure_column = 20;
+        private int temps_traitement_column = 21;
+
+        private int hist_decoupe_column = 22;
+        private int hist_pliage_column = 23;
+        private int hist_soudure_column = 24;
+        private int hist_traitement_column = 25;
         public Page6()
         {
             try
@@ -55,17 +76,30 @@ namespace projet
                 
                 try
                 {
-                    int columnNumbers = excel.GetColumnNumber("");
-                    int soudure_prevue_column = 0;
+                    num_commande_column = excel.GetColumnNumber("N° Cde");
+                    client_column = excel.GetColumnNumber("CLIENT");
+                    designation_column = excel.GetColumnNumber("DESIGNATION");
+                    reference_column = excel.GetColumnNumber("REFERENCE");
+                    qte_column = excel.GetColumnNumber("QTE");
+                    soudure_prevue_column = excel.GetColumnNumber("SOUDURE PREVUE");
+                    decoupe_column = excel.GetColumnNumber("DECOUPE");
+                    pliage_column = excel.GetColumnNumber("PLIAGE");
+                    soudure_column = excel.GetColumnNumber("SOUDURE");
+                    traitement_column = excel.GetColumnNumber("TRAITEMENT");
+
+                    temps_decoupe_column = excel.GetColumnNumber("TEMPS DECOUPE");
+                    temps_pliage_column = excel.GetColumnNumber("TEMPS PLIAGE");
+                    temps_soudure_column = excel.GetColumnNumber("TEMPS SOUDURE");
+                    temps_traitement_column = excel.GetColumnNumber("TEMPS TRAITEMENT");
+
+                    hist_decoupe_column = excel.GetColumnNumber("HISTORIQUE DECOUPE");
+                    hist_pliage_column = excel.GetColumnNumber("HISTORIQUE PLIAGE");
+                    hist_soudure_column = excel.GetColumnNumber("HISTORIQUE SOUDURE");
+                    hist_traitement_column = excel.GetColumnNumber("HISTORIQUE TRAITEMENT");
                 }
-                catch
+                catch (Exception ex)
                 {
-                    int soudure_prevue_column = 0;
-                    int decoupe_column = 0;
-                    int pliage_column = 0;
-                    int soudure_column = 0;
-                    int traitement_column = 0;
-                    int depart_column = 0;
+                    MessageBox.Show($"Error : {ex.Message}");
                 }
 
                 ArrayList rowIndex = new ArrayList();
@@ -76,7 +110,7 @@ namespace projet
                     int row = int.Parse(rows[i].ToString());
                     toutesCommandes.Add(row);
                     //Numéro Commande
-                    while (excel.ReadCell(row + 1, 1) == excel.ReadCell(row, 1))
+                    while (excel.ReadCell(row + 1, num_commande_column) == excel.ReadCell(row, num_commande_column))
                     {
                         row++;
                         count++;
@@ -101,7 +135,7 @@ namespace projet
                     string traitement = "Traitement" + i.ToString();
 
                     //Numéro Commande
-                    TextBlock commandeText = TextGrid(excel.ReadCell(row0, 1));
+                    TextBlock commandeText = TextGrid(excel.ReadCell(row0, num_commande_column));
                     Viewbox view = new Viewbox
                     {
                         MaxWidth = 100,
@@ -111,7 +145,7 @@ namespace projet
                     AddViewBox(i, 0, view);
 
                     //Client
-                    TextBlock clientText = TextGrid(excel.ReadCell(row0, 3));
+                    TextBlock clientText = TextGrid(excel.ReadCell(row0, client_column));
                     Viewbox view2 = new Viewbox
                     {
                         Width = 130,
@@ -121,7 +155,7 @@ namespace projet
                     AddViewBox(i, 1, view2);
 
                     //Désignation
-                    TextBlock designText = TextGrid(excel.ReadCell(row0, 5));
+                    TextBlock designText = TextGrid(excel.ReadCell(row0, designation_column));
                     Viewbox view3 = new Viewbox
                     {
                         Width = 180,
@@ -131,7 +165,7 @@ namespace projet
                     AddViewBox(i, 2, view3);
 
                     //Référence
-                    TextBlock planText = TextGrid(excel.ReadCell(row0, 6));
+                    TextBlock planText = TextGrid(excel.ReadCell(row0, reference_column));
                     Viewbox view4 = new Viewbox
                     {
                         Width = 180,
@@ -141,7 +175,7 @@ namespace projet
                     AddViewBox(i, 3, view4);
 
                     //Quantité
-                    TextBlock quantitéText = TextGrid(excel.ReadCell(row0, 7));
+                    TextBlock quantitéText = TextGrid(excel.ReadCell(row0, qte_column));
                     Viewbox view5 = new Viewbox
                     {
                         Width = 80,
@@ -151,39 +185,39 @@ namespace projet
                     AddViewBox(i, 4, view5);
 
                     //DECOUPE
-                    if (excel.GetColor(row0, 12) == 0)//Terminé //changé
+                    if (excel.GetColor(row0, decoupe_column) == 0)//Terminé //changé
                     {
                         decoupe_list.Add("Terminé");
                         AddBtn(i, 5, 0, decoupe);
                     }
-                    else if (excel.GetColor(row0, 12) == 1)//En Cours
+                    else if (excel.GetColor(row0, decoupe_column) == 1)//En Cours
                     {
                         decoupe_list.Add("En Cours");
                         AddBtn(i, 5, 1, decoupe);
                     }
-                    else if (excel.GetColor(row0, 12) == 2)//A Faire
+                    else if (excel.GetColor(row0, decoupe_column) == 2)//A Faire
                     {
                         decoupe_list.Add("À Faire");
                         AddBtn(i, 5, 2, decoupe);
                     }
                     else
                     {
-                        excel.FillRed(row0, 12);
+                        excel.FillRed(row0, decoupe_column);
                         decoupe_list.Add("À Faire");
                         AddBtn(i, 5, 2, decoupe);
                     }
                     //PLIAGE
-                    if (excel.GetColor(row0, 13) == 0)//Terminé //changé
+                    if (excel.GetColor(row0, pliage_column) == 0)//Terminé //changé
                     {
                         pliage_list.Add("Terminé");
                         AddBtn(i, 6, 0, pliage);
                     }
-                    else if (excel.GetColor(row0, 13) == 1)//En Cours
+                    else if (excel.GetColor(row0, pliage_column) == 1)//En Cours
                     {
                         pliage_list.Add("En Cours");
                         AddBtn(i, 6, 1, pliage);
                     }
-                    else if (excel.GetColor(row0, 13) == 2)//A Faire
+                    else if (excel.GetColor(row0, pliage_column) == 2)//A Faire
                     {
                         pliage_list.Add("À Faire");
                         AddBtn(i, 6, 2, pliage);
@@ -195,27 +229,27 @@ namespace projet
                         AddBtn(i, 6, 2, pliage);
                     }
                     //SOUDURE
-                    if (excel.SoudurePrévue(row0, 10))//changé
+                    if (excel.SoudurePrévue(row0, soudure_prevue_column))//changé
                     {
                         soudureList.Add(1);
-                        if (excel.GetColor(row0, 14) == 0)//Terminé //changé
+                        if (excel.GetColor(row0, soudure_column) == 0)//Terminé //changé
                         {
                             soudure_list.Add("Terminé");
                             AddBtn(i, 7, 0, soudure);
                         }
-                        else if (excel.GetColor(row0, 14) == 1)//En Cours //changé
+                        else if (excel.GetColor(row0, soudure_column) == 1)//En Cours //changé
                         {
                             soudure_list.Add("En Cours");
                             AddBtn(i, 7, 1, soudure);
                         }
-                        else if (excel.GetColor(row0, 14) == 2)//A Faire
+                        else if (excel.GetColor(row0, soudure_column) == 2)//A Faire
                         {
                             soudure_list.Add("À Faire");
                             AddBtn(i, 7, 2, soudure);
                         }
                         else
                         {
-                            excel.FillRed(row0, 14);
+                            excel.FillRed(row0, soudure_column);
                             soudure_list.Add("À Faire");
                             AddBtn(i, 7, 2, soudure);
                         }
@@ -227,24 +261,24 @@ namespace projet
                         AddText(i, 7, "PAS DE SOUDURE");
                     }
                     //TRAITEMENT
-                    if (excel.GetColor(row0, 15) == 0)//Terminé //changé
+                    if (excel.GetColor(row0, traitement_column) == 0)//Terminé //changé
                     {
                         traitement_list.Add("Terminé");
                         AddBtn(i, 8, 0, traitement);
                     }
-                    else if (excel.GetColor(row0, 15) == 1)//En Cours
+                    else if (excel.GetColor(row0, traitement_column) == 1)//En Cours
                     {
                         traitement_list.Add("En Cours");
                         AddBtn(i, 8, 1, traitement);
                     }
-                    else if (excel.GetColor(row0, 15) == 2)//A Faire
+                    else if (excel.GetColor(row0, traitement_column) == 2)//A Faire
                     {
                         traitement_list.Add("À Faire");
                         AddBtn(i, 8, 2, traitement);
                     }
                     else
                     {
-                        excel.FillRed(row0, 15);
+                        excel.FillRed(row0, traitement_column);
                         traitement_list.Add("À Faire");
                         AddBtn(i, 8, 2, traitement);
                     }
@@ -578,7 +612,7 @@ namespace projet
                     {
                         //Découpe
                         row.Add(row2);
-                        column.Add(22);
+                        column.Add(hist_decoupe_column);
                         if (GetState(5 + 9 * i) == "À Faire")
                         {
                             //excel.FillRed(row2, 11);
@@ -608,7 +642,7 @@ namespace projet
                     if (GetState(6 + 9 * i) != pliage_flag)
                     {
                         row.Add(row2);
-                        column.Add(23);
+                        column.Add(hist_pliage_column);
                         if (GetState(6 + 9 * i) == "À Faire")
                         {
                             //excel.FillRed(row2, 12);
@@ -628,8 +662,7 @@ namespace projet
                             content.Add(name + " :" + "\nTerminé - " + date);
                         }
                         else
-                        {
-                            ;
+                        {                            
                             //excel.FillRed(row2, 12);
                             color.Add("Red");
                             content.Add(name + " :" + "\nÀ faire - " + date);
@@ -641,7 +674,7 @@ namespace projet
                         if (GetState(7 + 9 * i) != soudure_flag)
                         {
                             row.Add(row2);
-                            column.Add(24);
+                            column.Add(hist_soudure_column);
                             if (GetState(7 + 9 * i) == "À Faire")
                             {
                                 //excel.FillRed(row2, 13);
@@ -671,7 +704,7 @@ namespace projet
                     else
                     {
                         row.Add(row2);
-                        column.Add(24);
+                        column.Add(hist_soudure_column);
                         color.Add("White");
                         content.Add("");
                     }
@@ -679,7 +712,7 @@ namespace projet
                     if (GetState(8 + 9 * i) != traitement_flag)
                     {
                         row.Add(row2);
-                        column.Add(25);
+                        column.Add(hist_traitement_column);
                         if (GetState(8 + 9 * i) == "À Faire")
                         {
                             color.Add("Red");
@@ -730,6 +763,9 @@ namespace projet
                 //Excel excel = new Excel(@"P:\Logistique et Planning cdes\PLANNING Cdes\TEST.xlsx", 1);
                 //Excel excel = new Excel(@"J:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx", 1);
                 Excel excel = new Excel(@"C:\Users\Simon\Documents\Meerkat\test.xlsx", 1);
+                
+                int column_to_fill = 12;
+                int column_to_date = 18;
                 if (row.Count > 0)
                 {
                     for (int i = 0; i < row.Count; i++)
@@ -737,33 +773,55 @@ namespace projet
                         var value = ((double)i / row.Count) * 100;
                         var pc = Convert.ToInt32(Math.Round(value, 0));
                         worker.ReportProgress(pc, String.Format("Sauvegarde"));
+
+                        if (column[i] == hist_decoupe_column)
+                        {
+                            column_to_fill = decoupe_column;
+                            column_to_date = temps_decoupe_column;
+                        }
+                        else if (column[i] == hist_pliage_column)
+                        {
+                            column_to_fill = pliage_column;
+                            column_to_date = temps_pliage_column;
+                        }
+                        else if (column[i] == hist_soudure_column)
+                        {
+                            column_to_fill = soudure_column;
+                            column_to_date = temps_soudure_column;
+                        }
+                        else if (column[i] == hist_traitement_column)
+                        {
+                            column_to_fill = traitement_column;
+                            column_to_date = temps_traitement_column;
+                        }
+
                         if (color[i] == "Red")
                         {
-                            excel.FillRed(int.Parse(row[i].ToString()), int.Parse(column[i].ToString()) - 10);
+                            excel.FillRed(int.Parse(row[i].ToString()), column_to_fill);
                         }
                         else if (color[i] == "Blue")
                         {
-                            excel.FillBlue(int.Parse(row[i].ToString()), int.Parse(column[i].ToString()) - 10);
-                            excel.WriteDate(int.Parse(row[i].ToString()), int.Parse(column[i].ToString()) - 4, ajd);
+                            excel.FillBlue(int.Parse(row[i].ToString()), column_to_fill);
+                            excel.WriteDate(int.Parse(row[i].ToString()), column_to_date, ajd);
                         }
                         else if (color[i] == "Green")
                         {
-                            excel.FillGreen(int.Parse(row[i].ToString()), int.Parse(column[i].ToString()) - 10);
-                            if (excel.IsCellDated(int.Parse(row[i].ToString()), int.Parse(column[i].ToString()) - 4))
+                            excel.FillGreen(int.Parse(row[i].ToString()), column_to_fill);
+                            if (excel.IsCellDated(int.Parse(row[i].ToString()), column_to_date))
                             {
-                                DateTime start = excel.ReadDate(int.Parse(row[i].ToString()), int.Parse(column[i].ToString()) - 4);
+                                DateTime start = excel.ReadDate(int.Parse(row[i].ToString()), column_to_date);
                                 TimeSpan time = WorkTime(start, ajd);
-                                excel.WriteTS(int.Parse(row[i].ToString()), int.Parse(column[i].ToString()) - 4, time);
+                                excel.WriteTS(int.Parse(row[i].ToString()), column_to_date, time);
                             }
                             else
                             {
-                                excel.CellOverWrite(int.Parse(row[i].ToString()), int.Parse(column[i].ToString()) - 4, "fini : " + ajd.ToString() + "\n(début inconnu)");
+                                excel.CellOverWrite(int.Parse(row[i].ToString()), column_to_date, "fini : " + ajd.ToString() + "\n(début inconnu)");
                             }
 
                         }
                         else if (color[i] == "White")
                         {
-                            excel.FillWhite(int.Parse(row[i].ToString()), int.Parse(column[i].ToString()) - 10);
+                            excel.FillWhite(int.Parse(row[i].ToString()), column_to_fill);
                         }
                         excel.CellWrite(int.Parse(row[i].ToString()), int.Parse(column[i].ToString()), content[i].ToString());
                     }
