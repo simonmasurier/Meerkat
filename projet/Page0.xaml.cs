@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -40,12 +41,13 @@ namespace projet
                 statusPasswordText.Foreground = Brushes.LimeGreen;
                 statusPasswordText.Text = "Chargement";
                 Progress.Visibility = Visibility.Visible;
+
                 BackgroundWorker worker = new BackgroundWorker();
                 worker.RunWorkerCompleted += worker_RunWorkerCompleted;
                 worker.WorkerReportsProgress = true;
                 worker.DoWork += worker_DoWork;
                 worker.ProgressChanged += worker_ProgressChanged;
-                worker.RunWorkerAsync();
+                worker.RunWorkerAsync(password);
             }
             else
             {
@@ -61,30 +63,63 @@ namespace projet
         }
         private void worker_DoWork(object sender, DoWorkEventArgs e)
         {
-            var worker = sender as BackgroundWorker;
-            worker.ReportProgress(5, "Ouverture du fichier");
-            int i;
-            //Excel excel = new Excel(@"P:\Logistique et Planning cdes\PLANNING Cdes\identifiants.xlsx", 1);
-            Excel excel = new Excel(@"J:\Logistique et Planning cdes\PLANNING Cdes\identifiants.xlsx", 1);
-            //Excel excel = new Excel(@"C:\Users\simon\Documents\id.xlsx", 1);
-            int range = excel.GetRange();
-            string password = passwordBox.Password.ToString();
-            for (i = 2; i <= range; i++)
+            try
             {
-                var value = ((double)i / range) * 100;
-                var pc = Convert.ToInt32(Math.Round(value, 0));
-                worker.ReportProgress(pc, "Chargement");
-                if (excel.ReadCell(i, 2) == password && password != "")
+                var worker = sender as BackgroundWorker;
+                string password = (string)e.Argument;
+                worker.ReportProgress(5, "Ouverture du fichier");
+
+                string path1 = Constants.IdNetworkPath_P;
+                string path2 = Constants.IdNetworkPath_J;
+                //string path2 = @"C:\Users\Simon\Documents\Meerkat\id.xlsx";
+
+                string fileToOpen = null;
+
+                // Vérifier si l'un des deux fichiers existe
+                if (File.Exists(path1))
                 {
-                    flag = 1;
-                    name = excel.ReadCell(i, 1).ToString();
-                    App.Current.Properties["Name"] = excel.ReadCell(i, 1).ToString();
-                    App.Current.Properties["Password"] = password;
-                    break;
+                    fileToOpen = path1;
                 }
-            }           
-            worker.ReportProgress(100, "Terminé");
-            excel.CloseFile();
+                else if (File.Exists(path2))
+                {
+                    fileToOpen = path2;
+                }
+
+                if (fileToOpen != null)
+                {
+                    Excel excel = new Excel(fileToOpen, 1, true);
+                    int range = excel.GetRange();
+                    int progressInterval = 20;
+
+                    for (int i = 2; i <= range; i++)
+                    {
+                        if (i % progressInterval == 0)
+                        {
+                            var value = ((double)i / range) * 100;
+                            var pc = Convert.ToInt32(Math.Round(value, 0));
+                            worker.ReportProgress(pc, "Chargement");
+                        }
+                        if (excel.ReadCell(i, 2) == password && password != "")
+                        {
+                            flag = 1;
+                            name = excel.ReadCell(i, 1).ToString();
+                            App.Current.Properties["Name"] = excel.ReadCell(i, 1).ToString();
+                            App.Current.Properties["Password"] = password;
+                            break;
+                        }
+                    }
+                    worker.ReportProgress(100, "Terminé");
+                    excel.CloseFile();
+                }
+                else
+                {
+                    MessageBox.Show("Aucun fichier n'a été trouvé aux chemins spécifiés.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error : {ex.Message}");
+            }
         }
         private void worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {

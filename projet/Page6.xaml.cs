@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,275 +24,356 @@ namespace projet
     /// </summary>
     public partial class Page6 : Page
     {
-        ArrayList content = new ArrayList();
-        ArrayList column = new ArrayList();
-        ArrayList row = new ArrayList();
-        ArrayList color = new ArrayList();
-        ArrayList toutesCommandes = new ArrayList();
+        private List<string> content = new List<string>();
+        private List<int> column = new List<int>();
+        private List<int> row = new List<int>();
+        private List<string> color = new List<string>();
+        private List<int> toutesCommandes = new List<int>();
 
-        ArrayList decoupe_list = new ArrayList();
-        ArrayList pliage_list = new ArrayList();
-        ArrayList soudure_list = new ArrayList();
-        ArrayList traitement_list = new ArrayList();
+        private List<string> decoupe_list = new List<string>();
+        private List<string> pliage_list = new List<string>();
+        private List<string> soudure_list = new List<string>();
+        private List<string> traitement_list = new List<string>();
 
-        ArrayList etat1 = new ArrayList()
-            {
-                "Terminé",
-                "En Cours",
-                "À Faire"
-            };
-        ArrayList etat2 = new ArrayList()
-            {
-                "Terminé",
-                "En Cours"
-            };
-        ArrayList etat3 = new ArrayList()
-            {
-                "En Cours",
-                "À Faire"
-            };
-        ArrayList soudureList = new ArrayList();
+        private List<int> soudureList = new List<int>();
+        private List<int> traitementList = new List<int>();
+
+        private int num_commande_column = 1;
+        private int client_column = 3;
+        private int designation_column = 5;
+        private int reference_column = 6;
+        private int qte_column = 7;
+
+        private int soudure_prevue_column = 10;
+        private int traitement_prevu_column = 11;
+        private int decoupe_column = 12;
+        private int pliage_column = 13;
+        private int soudure_column = 14;
+        private int traitement_column = 15;
+
+        private int temps_decoupe_column = 18;
+        private int temps_pliage_column = 19;
+        private int temps_soudure_column = 20;
+        private int temps_traitement_column = 21;
+
+        private int hist_decoupe_column = 22;
+        private int hist_pliage_column = 23;
+        private int hist_soudure_column = 24;
+        private int hist_traitement_column = 25;
         public Page6()
         {
-            InitializeComponent();
-            Progress.Visibility = Visibility.Hidden;
-            Saving.Text = "";
-            name.Text = App.Current.Properties["Name"].ToString();
-            ArrayList commandes = new ArrayList();
-            ArrayList rows = new ArrayList();
-            ArrayList pièces = new ArrayList();
-            rows = App.Current.Properties["Rows"] as ArrayList;
-            commandes = App.Current.Properties["Array"] as ArrayList;
-
-            //Excel excel = new Excel(@"P:\Logistique et Planning cdes\PLANNING Cdes\TEST.xlsx", 1);
-            Excel excel = new Excel(@"J:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx", 1);
-            //Excel excel = new Excel(@"C:\Users\simon\Desktop\planning Cdes.xlsx", 1);
-            ArrayList rowIndex= new ArrayList();
-            int count = -1;
-            for (int i = 0; i < commandes.Count; i++)
+            try
             {
-                count++;
-                int row = int.Parse(rows[i].ToString());
-                toutesCommandes.Add(row);
-                while (excel.ReadCell(row + 1, 1) == excel.ReadCell(row, 1))
+                InitializeComponent();
+                Progress.Visibility = Visibility.Hidden;
+                Saving.Text = "";
+                name.Text = App.Current.Properties["Name"].ToString();
+                List<string> commandes = new List<string>();
+                List<int> rows = new List<int>();
+                List<int> pièces = new List<int>();
+                rows = App.Current.Properties["Rows"] as List<int>;
+                commandes = App.Current.Properties["Array"] as List<string>;
+
+                string path1 = Constants.ExcelNetworkPath_J;
+                string path2 = Constants.ExcelNetworkPath_P;
+
+                string fileToOpen = null;
+
+                // Vérifier si l'un des deux fichiers existe
+                if (File.Exists(path1))
                 {
-                    row++;
-                    count++;
-                    toutesCommandes.Add(row);
+                    fileToOpen = path1;
                 }
-                if(i!=commandes.Count-1)
+                else if (File.Exists(path2))
                 {
-                    rowIndex.Add(count);
-                }              
+                    fileToOpen = path2;
+                }
+
+                if (fileToOpen != null)
+                {
+                    Excel excel = new Excel(fileToOpen, 1, false);
+
+                    try
+                    {
+                        num_commande_column = excel.GetColumnNumber("N° Cde");
+                        client_column = excel.GetColumnNumber("CLIENT");
+                        designation_column = excel.GetColumnNumber("DESIGNATION");
+                        reference_column = excel.GetColumnNumber("REFERENCE");
+                        qte_column = excel.GetColumnNumber("QTE");
+
+                        soudure_prevue_column = excel.GetColumnNumber("SOUDURE PREVUE");
+                        traitement_prevu_column = excel.GetColumnNumber("TRAITEMENT PREVU");
+                        decoupe_column = excel.GetColumnNumber("DECOUPE");
+                        pliage_column = excel.GetColumnNumber("PLIAGE");
+                        soudure_column = excel.GetColumnNumber("SOUDURE");
+                        traitement_column = excel.GetColumnNumber("TRAITEMENT");
+
+                        temps_decoupe_column = excel.GetColumnNumber("TEMPS DECOUPE");
+                        temps_pliage_column = excel.GetColumnNumber("TEMPS PLIAGE");
+                        temps_soudure_column = excel.GetColumnNumber("TEMPS SOUDURE");
+                        temps_traitement_column = excel.GetColumnNumber("TEMPS TRAITEMENT");
+
+                        hist_decoupe_column = excel.GetColumnNumber("HISTORIQUE DECOUPE");
+                        hist_pliage_column = excel.GetColumnNumber("HISTORIQUE PLIAGE");
+                        hist_soudure_column = excel.GetColumnNumber("HISTORIQUE SOUDURE");
+                        hist_traitement_column = excel.GetColumnNumber("HISTORIQUE TRAITEMENT");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error : {ex.Message}");
+                    }
+
+                    ArrayList rowIndex = new ArrayList();
+                    int count = -1;
+                    for (int i = 0; i < commandes.Count; i++)
+                    {
+                        count++;
+                        int row = int.Parse(rows[i].ToString());
+                        toutesCommandes.Add(row);
+                        //Numéro Commande
+                        while (excel.ReadCell(row + 1, num_commande_column) == excel.ReadCell(row, num_commande_column))
+                        {
+                            row++;
+                            count++;
+                            toutesCommandes.Add(row);
+                        }
+                        if (i != commandes.Count - 1)
+                        {
+                            rowIndex.Add(count);
+                        }
+                    }
+                    for (int i = 1; i < toutesCommandes.Count; i++)
+                    {
+                        AddRow();
+                    }
+                    for (int i = 0; i < toutesCommandes.Count; i++)
+                    {
+                        //SETUP DES COMBOBOX
+                        int row0 = int.Parse(toutesCommandes[i].ToString());
+                        string decoupe = "Decoupe" + i.ToString();
+                        string pliage = "Pliage" + i.ToString();
+                        string soudure = "Soudure" + i.ToString();
+                        string traitement = "Traitement" + i.ToString();
+
+                        //Numéro Commande
+                        TextBlock commandeText = TextGrid(excel.ReadCell(row0, num_commande_column));
+                        Viewbox view = new Viewbox
+                        {
+                            MaxWidth = 100,
+                            StretchDirection = StretchDirection.DownOnly
+                        };
+                        view.Child = commandeText;
+                        AddViewBox(i, 0, view);
+
+                        //Client
+                        TextBlock clientText = TextGrid(excel.ReadCell(row0, client_column));
+                        Viewbox view2 = new Viewbox
+                        {
+                            Width = 130,
+                            StretchDirection = StretchDirection.DownOnly
+                        };
+                        view2.Child = clientText;
+                        AddViewBox(i, 1, view2);
+
+                        //Désignation
+                        TextBlock designText = TextGrid(excel.ReadCell(row0, designation_column));
+                        Viewbox view3 = new Viewbox
+                        {
+                            Width = 180,
+                            StretchDirection = StretchDirection.DownOnly
+                        };
+                        view3.Child = designText;
+                        AddViewBox(i, 2, view3);
+
+                        //Référence
+                        TextBlock planText = TextGrid(excel.ReadCell(row0, reference_column));
+                        Viewbox view4 = new Viewbox
+                        {
+                            Width = 180,
+                            StretchDirection = StretchDirection.DownOnly
+                        };
+                        view4.Child = planText;
+                        AddViewBox(i, 3, view4);
+
+                        //Quantité
+                        TextBlock quantitéText = TextGrid(excel.ReadCell(row0, qte_column));
+                        Viewbox view5 = new Viewbox
+                        {
+                            Width = 80,
+                            StretchDirection = StretchDirection.DownOnly
+                        };
+                        view5.Child = quantitéText;
+                        AddViewBox(i, 4, view5);
+
+                        //DECOUPE
+                        if (excel.GetColor(row0, decoupe_column) == 0)//Terminé
+                        {
+                            decoupe_list.Add("Terminé");
+                            AddBtn(i, 5, 0, decoupe);
+                        }
+                        else if (excel.GetColor(row0, decoupe_column) == 1)//En Cours
+                        {
+                            decoupe_list.Add("En Cours");
+                            AddBtn(i, 5, 1, decoupe);
+                        }
+                        else if (excel.GetColor(row0, decoupe_column) == 2)//A Faire
+                        {
+                            decoupe_list.Add("À Faire");
+                            AddBtn(i, 5, 2, decoupe);
+                        }
+                        else
+                        {
+                            excel.FillRed(row0, decoupe_column);
+                            decoupe_list.Add("À Faire");
+                            AddBtn(i, 5, 2, decoupe);
+                        }
+                        //PLIAGE
+                        if (excel.GetColor(row0, pliage_column) == 0)//Terminé 
+                        {
+                            pliage_list.Add("Terminé");
+                            AddBtn(i, 6, 0, pliage);
+                        }
+                        else if (excel.GetColor(row0, pliage_column) == 1)//En Cours
+                        {
+                            pliage_list.Add("En Cours");
+                            AddBtn(i, 6, 1, pliage);
+                        }
+                        else if (excel.GetColor(row0, pliage_column) == 2)//A Faire
+                        {
+                            pliage_list.Add("À Faire");
+                            AddBtn(i, 6, 2, pliage);
+                        }
+                        else
+                        {
+                            excel.FillRed(row0, 13);
+                            pliage_list.Add("À Faire");
+                            AddBtn(i, 6, 2, pliage);
+                        }
+                        //SOUDURE
+                        if (excel.SoudurePrévue(row0, soudure_prevue_column))
+                        {
+                            soudureList.Add(1);
+                            if (excel.GetColor(row0, soudure_column) == 0)//Terminé 
+                            {
+                                soudure_list.Add("Terminé");
+                                AddBtn(i, 7, 0, soudure);
+                            }
+                            else if (excel.GetColor(row0, soudure_column) == 1)//En Cours 
+                            {
+                                soudure_list.Add("En Cours");
+                                AddBtn(i, 7, 1, soudure);
+                            }
+                            else if (excel.GetColor(row0, soudure_column) == 2)//A Faire
+                            {
+                                soudure_list.Add("À Faire");
+                                AddBtn(i, 7, 2, soudure);
+                            }
+                            else
+                            {
+                                excel.FillRed(row0, soudure_column);
+                                soudure_list.Add("À Faire");
+                                AddBtn(i, 7, 2, soudure);
+                            }
+                        }
+                        else
+                        {
+                            soudureList.Add(0);
+                            soudure_list.Add("");
+                            AddText(i, 7, "PAS DE SOUDURE");
+                        }
+                        //TRAITEMENT
+                        if (excel.SoudurePrévue(row0, traitement_prevu_column))
+                        {
+                            traitementList.Add(1);
+                            if (excel.GetColor(row0, traitement_column) == 0)//Terminé 
+                            {
+                                traitement_list.Add("Terminé");
+                                AddBtn(i, 8, 0, traitement);
+                            }
+                            else if (excel.GetColor(row0, traitement_column) == 1)//En Cours
+                            {
+                                traitement_list.Add("En Cours");
+                                AddBtn(i, 8, 1, traitement);
+                            }
+                            else if (excel.GetColor(row0, traitement_column) == 2)//A Faire
+                            {
+                                traitement_list.Add("À Faire");
+                                AddBtn(i, 8, 2, traitement);
+                            }
+                            else
+                            {
+                                excel.FillRed(row0, traitement_column);
+                                traitement_list.Add("À Faire");
+                                AddBtn(i, 8, 2, traitement);
+                            }
+                        }
+                        else
+                        {
+                            traitementList.Add(0);
+                            traitement_list.Add("");
+                            AddText(i, 8, "PAS DE TRAIT.");
+                        }
+                    }
+                    excel.CloseSave();
+                }
+                else
+                {
+                    MessageBox.Show("Aucun fichier n'a été trouvé aux chemins spécifiés.");
+                }
             }
-            for (int i = 1; i < toutesCommandes.Count; i++)
+            catch (Exception ex)
             {
-                AddRow();
+                MessageBox.Show($"Error : {ex.Message}");
             }
-            for (int i = 0; i < toutesCommandes.Count; i++)
-            {
-                //SETUP DES COMBOBOX
-                int row0 = int.Parse(toutesCommandes[i].ToString());
-                string decoupe = "Decoupe" + i.ToString();
-                string pliage = "Pliage" + i.ToString();
-                string soudure = "Soudure" + i.ToString();
-                string traitement = "Traitement" + i.ToString();
-
-                TextBlock commandeText = TextGrid(excel.ReadCell(row0, 1));
-                Viewbox view = new Viewbox
-                {
-                    MaxWidth = 100,
-                    StretchDirection = StretchDirection.DownOnly
-                };
-                view.Child = commandeText;
-                AddViewBox(i, 0, view);
-
-                TextBlock clientText = TextGrid(excel.ReadCell(row0, 3));//changé
-                Viewbox view2 = new Viewbox
-                {
-                    Width = 130,
-                    StretchDirection = StretchDirection.DownOnly
-                };
-                view2.Child = clientText;
-                AddViewBox(i, 1, view2);
-
-                TextBlock designText = TextGrid(excel.ReadCell(row0, 5));//changé
-                Viewbox view3 = new Viewbox
-                {
-                    Width = 180,
-                    StretchDirection = StretchDirection.DownOnly
-                };
-                view3.Child = designText;
-                AddViewBox(i, 2, view3);
-
-                TextBlock planText = TextGrid(excel.ReadCell(row0, 6));//changé
-                Viewbox view4 = new Viewbox
-                {
-                    Width = 180,
-                    StretchDirection = StretchDirection.DownOnly
-                };
-                view4.Child = planText;
-                AddViewBox(i, 3, view4);
-
-                TextBlock quantitéText = TextGrid(excel.ReadCell(row0, 7));//changé
-                Viewbox view5 = new Viewbox
-                {
-                    Width = 80,
-                    StretchDirection = StretchDirection.DownOnly
-                };
-                view5.Child = quantitéText;
-                AddViewBox(i, 4, view5);
-
-                //AddTextGrid(i, 0, excel.ReadCell(row0, 1)); //Commande
-                //AddTextGrid(i, 1, excel.ReadCell(row0, 4)); //Designation
-                //AddTextGrid(i, 2, excel.ReadCell(row0, 5)); //Plan
-                //DECOUPE
-                if (excel.GetColor(row0, 12) == 0)//Terminé //changé
-                {
-                    decoupe_list.Add("Terminé");
-                    AddBtn(i, 5, 0, decoupe);
-                }
-                else if (excel.GetColor(row0, 12) == 1)//En Cours
-                {
-                    decoupe_list.Add("En Cours");
-                    AddBtn(i, 5, 1, decoupe);
-                }
-                else if (excel.GetColor(row0, 12) == 2)//A Faire
-                {
-                    decoupe_list.Add("À Faire");
-                    AddBtn(i, 5, 2, decoupe);
-                }
-                else
-                {
-                    excel.FillRed(row0, 12);
-                    decoupe_list.Add("À Faire");
-                    AddBtn(i, 5, 2, decoupe);
-                }
-                //PLIAGE
-                if (excel.GetColor(row0, 13) == 0)//Terminé //changé
-                {
-                    pliage_list.Add("Terminé");
-                    AddBtn(i, 6, 0, pliage);
-                }
-                else if (excel.GetColor(row0, 13) == 1)//En Cours
-                {
-                    pliage_list.Add("En Cours");
-                    AddBtn(i, 6, 1, pliage);
-                }
-                else if (excel.GetColor(row0, 13) == 2)//A Faire
-                {
-                    pliage_list.Add("À Faire");
-                    AddBtn(i, 6, 2, pliage);
-                }
-                else
-                {
-                    excel.FillRed(row0, 13);
-                    pliage_list.Add("À Faire");
-                    AddBtn(i, 6, 2, pliage);                                      
-                }
-                //SOUDURE
-                if (excel.SoudurePrévue(row0, 10))//changé
-                {
-                    soudureList.Add(1);
-                    if (excel.GetColor(row0, 14) == 0)//Terminé //changé
-                    {
-                        soudure_list.Add("Terminé");
-                        AddBtn(i, 7, 0, soudure);
-                    }
-                    else if (excel.GetColor(row0, 14) == 1)//En Cours //changé
-                    {
-                        soudure_list.Add("En Cours");
-                        AddBtn(i, 7, 1, soudure);
-                    }
-                    else if (excel.GetColor(row0, 14) == 2)//A Faire
-                    {
-                        soudure_list.Add("À Faire");
-                        AddBtn(i, 7, 2, soudure);
-                    }
-                    else
-                    {
-                        excel.FillRed(row0, 14);
-                        soudure_list.Add("À Faire");
-                        AddBtn(i, 7, 2, soudure);
-                    }
-                }
-                else
-                {
-                    soudureList.Add(0);
-                    soudure_list.Add("");
-                    AddText(i, 7, "PAS DE SOUDURE");
-                }
-                //TRAITEMENT
-                if (excel.GetColor(row0, 15) == 0)//Terminé //changé
-                {
-                    traitement_list.Add("Terminé");
-                    AddBtn(i, 8, 0, traitement);
-                }
-                else if (excel.GetColor(row0, 15) == 1)//En Cours
-                {
-                    traitement_list.Add("En Cours");
-                    AddBtn(i, 8, 1, traitement);
-                }
-                else if (excel.GetColor(row0, 15) == 2)//A Faire
-                {
-                    traitement_list.Add("À Faire");
-                    AddBtn(i, 8, 2, traitement);
-                }
-                else
-                {
-                    excel.FillRed(row0, 15);
-                    traitement_list.Add("À Faire");
-                    AddBtn(i, 8, 2, traitement);
-                }
-            }
-            excel.CloseSave();
         }
         public void AddBtn(int i, int j, int color, string name)
         {
-            Brush background;
-            Brush foreground;
-            FontFamily font = new FontFamily("Berlin Sans FB Demi");
-            string content;
-            if (color == 0) //Terminé
+            try
             {
-                background = Brushes.LimeGreen;
-                foreground = Brushes.White;
-                content = "Terminé";
-            }
-            else if(color == 1)// En cours
-            {
-                background = Brushes.Blue;
-                foreground = Brushes.White;
-                content = "En Cours";
-            }
-            else if(color == 2) //A faire
-            {
-                background = Brushes.Red;
-                foreground = Brushes.White;
-                content = "À Faire";
-            }
-            else //A faire
-            {
-                background = Brushes.Red;
-                foreground = Brushes.White;
-                content = "À Faire";
-            }
+                Brush background;
+                Brush foreground;
+                FontFamily font = new FontFamily("Berlin Sans FB Demi");
+                string content;
+                if (color == 0) //Terminé
+                {
+                    background = Brushes.LimeGreen;
+                    foreground = Brushes.White;
+                    content = "Terminé";
+                }
+                else if (color == 1)// En cours
+                {
+                    background = Brushes.Blue;
+                    foreground = Brushes.White;
+                    content = "En Cours";
+                }
+                else if (color == 2) //A faire
+                {
+                    background = Brushes.Red;
+                    foreground = Brushes.White;
+                    content = "À Faire";
+                }
+                else //A faire
+                {
+                    background = Brushes.Red;
+                    foreground = Brushes.White;
+                    content = "À Faire";
+                }
 
-            Thickness thick = new Thickness(0);
-            Button btn = new Button
-            {
-                VerticalAlignment = VerticalAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Width = 100,
-                Height = 40,
-                Name = name,
-                FontFamily = font,
-                FontSize = 20,
-                Foreground = foreground,
-                Content = content,
-                Background = background,
-                BorderThickness = thick,
-                Resources =
+                Thickness thick = new Thickness(0);
+                Button btn = new Button
+                {
+                    VerticalAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Width = 100,
+                    Height = 40,
+                    Name = name,
+                    FontFamily = font,
+                    FontSize = 20,
+                    Foreground = foreground,
+                    Content = content,
+                    Background = background,
+                    BorderThickness = thick,
+                    Resources =
                 {
                     {
                         typeof(Border), new Style
@@ -304,62 +386,51 @@ namespace projet
                         }
                     }
                 }
-            };
-            btn.Click += Btn_Click;
-            Grid.SetColumn(btn, j);
-            Grid.SetRow(btn, i);
-            grid.Children.Add(btn);
+                };
+                btn.Click += Btn_Click;
+                Grid.SetColumn(btn, j);
+                Grid.SetRow(btn, i);
+                grid.Children.Add(btn);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error : {ex.Message}");
+            }
         }
         private void Btn_Click(object sender, RoutedEventArgs e)
         {
-            Button btn = sender as Button;
-            Brush background = btn.Background;
-            string name = btn.Name;
-            string commande = btn.Name.Substring(3);
-            bool flag = false;
-            if (background != Brushes.LimeGreen)
+            try
             {
-                for (int i = 0; i < toutesCommandes.Count; i++) //Pour chaque ligne
+                Button btn = sender as Button;
+                Brush background = btn.Background;
+                string name = btn.Name;
+                string commande = btn.Name.Substring(3);
+                bool flag = false;
+                if (background != Brushes.LimeGreen)
                 {
-                    for (int j = 0; j < 4; j++) //Pour chaque colonne
+                    for (int i = 0; i < toutesCommandes.Count; i++) //Pour chaque ligne
                     {
-                        int place = 9 * i + 5 + j;
-                        object btn2 = grid.Children[place];
-                        if (btn2 is Button)
+                        for (int j = 0; j < 4; j++) //Pour chaque colonne
                         {
-                            string name2 = (btn2 as Button).Name;
-                            if (name == name2)
+                            int place = 9 * i + 5 + j;
+                            object btn2 = grid.Children[place];
+                            if (btn2 is Button)
                             {
-                                flag = true;
-                                if (background == Brushes.Red)
+                                string name2 = (btn2 as Button).Name;
+                                if (name == name2)
                                 {
-                                    if (j == 0)
+                                    flag = true;
+                                    if (background == Brushes.Red)
                                     {
-                                        btn.Background = Brushes.Blue;
-                                        btn.Content = "En Cours";
-                                    }
-                                    else if (j == 1 || j == 2)
-                                    {
-                                        int place0 = 9 * i + 4 + j;
-                                        object avant = grid.Children[place0];
-                                        Brush check = (avant as Button).Background;
-                                        if (check == Brushes.Blue)
+                                        if (j == 0)
                                         {
                                             btn.Background = Brushes.Blue;
                                             btn.Content = "En Cours";
                                         }
-                                        else if (check == Brushes.LimeGreen)
+                                        else if (j == 1 || j == 2)
                                         {
-                                            btn.Background = Brushes.Blue;
-                                            btn.Content = "En Cours";
-                                        }
-                                    }
-                                    else if (j == 3)
-                                    {
-                                        int place0 = 9 * i + 4 + j;
-                                        object avant = grid.Children[place0];
-                                        if (avant is Button)
-                                        {
+                                            int place0 = 9 * i + 4 + j;
+                                            object avant = grid.Children[place0];
                                             Brush check = (avant as Button).Background;
                                             if (check == Brushes.Blue)
                                             {
@@ -372,48 +443,53 @@ namespace projet
                                                 btn.Content = "En Cours";
                                             }
                                         }
-                                        else
+                                        else if (j == 3)
                                         {
-                                            int place02 = 9 * i + 3 + j;
-                                            object avant2 = grid.Children[place02];
-                                            Brush check = (avant2 as Button).Background;
-                                            if (check == Brushes.Blue)
+                                            int place0 = 9 * i + 4 + j;
+                                            object avant = grid.Children[place0];
+                                            if (avant is Button)
                                             {
-                                                btn.Background = Brushes.Blue;
-                                                btn.Content = "En Cours";
+                                                Brush check = (avant as Button).Background;
+                                                if (check == Brushes.Blue)
+                                                {
+                                                    btn.Background = Brushes.Blue;
+                                                    btn.Content = "En Cours";
+                                                }
+                                                else if (check == Brushes.LimeGreen)
+                                                {
+                                                    btn.Background = Brushes.Blue;
+                                                    btn.Content = "En Cours";
+                                                }
                                             }
-                                            else if (check == Brushes.LimeGreen)
+                                            else
                                             {
-                                                btn.Background = Brushes.Blue;
-                                                btn.Content = "En Cours";
+                                                int place02 = 9 * i + 3 + j;
+                                                object avant2 = grid.Children[place02];
+                                                Brush check = (avant2 as Button).Background;
+                                                if (check == Brushes.Blue)
+                                                {
+                                                    btn.Background = Brushes.Blue;
+                                                    btn.Content = "En Cours";
+                                                }
+                                                else if (check == Brushes.LimeGreen)
+                                                {
+                                                    btn.Background = Brushes.Blue;
+                                                    btn.Content = "En Cours";
+                                                }
                                             }
                                         }
                                     }
-                                }
-                                else if (background == Brushes.Blue)
-                                {
-                                    if (j == 0)
+                                    else if (background == Brushes.Blue)
                                     {
-                                        btn.Background = Brushes.LimeGreen;
-                                        btn.Content = "Terminé";
-                                    }
-                                    else if (j == 1 || j == 2)
-                                    {
-                                        int place0 = 9 * i + 4 + j;
-                                        object avant = grid.Children[place0];
-                                        Brush check = (avant as Button).Background;
-                                        if (check == Brushes.LimeGreen)
+                                        if (j == 0)
                                         {
                                             btn.Background = Brushes.LimeGreen;
                                             btn.Content = "Terminé";
                                         }
-                                    }
-                                    else if (j == 3)
-                                    {
-                                        int place0 = 9 * i + 4 + j;
-                                        object avant = grid.Children[place0];
-                                        if (avant is Button)
+                                        else if (j == 1 || j == 2)
                                         {
+                                            int place0 = 9 * i + 4 + j;
+                                            object avant = grid.Children[place0];
                                             Brush check = (avant as Button).Background;
                                             if (check == Brushes.LimeGreen)
                                             {
@@ -421,28 +497,46 @@ namespace projet
                                                 btn.Content = "Terminé";
                                             }
                                         }
-                                        else
+                                        else if (j == 3)
                                         {
-                                            int place02 = 9 * i + 3 + j;
-                                            object avant2 = grid.Children[place02];
-                                            Brush check = (avant2 as Button).Background;
-                                            if (check == Brushes.LimeGreen)
+                                            int place0 = 9 * i + 4 + j;
+                                            object avant = grid.Children[place0];
+                                            if (avant is Button)
                                             {
-                                                btn.Background = Brushes.LimeGreen;
-                                                btn.Content = "Terminé";
+                                                Brush check = (avant as Button).Background;
+                                                if (check == Brushes.LimeGreen)
+                                                {
+                                                    btn.Background = Brushes.LimeGreen;
+                                                    btn.Content = "Terminé";
+                                                }
+                                            }
+                                            else
+                                            {
+                                                int place02 = 9 * i + 3 + j;
+                                                object avant2 = grid.Children[place02];
+                                                Brush check = (avant2 as Button).Background;
+                                                if (check == Brushes.LimeGreen)
+                                                {
+                                                    btn.Background = Brushes.LimeGreen;
+                                                    btn.Content = "Terminé";
+                                                }
                                             }
                                         }
                                     }
+                                    break;
                                 }
-                                break;
                             }
-                        }                       
-                    }
-                    if (flag == true)
-                    {
-                        break;
+                        }
+                        if (flag == true)
+                        {
+                            break;
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error : {ex.Message}");
             }
         }
         private void Exit_Click(object sender, RoutedEventArgs e)
@@ -528,211 +622,290 @@ namespace projet
             Saving.Text = "Veuillez patienter";
             Sauvegarde();
         }
-        private void Sauvegarde()
+        private void Sauvegarde() //ERREUR ICI !!!!
         {
-            content.Clear();
-            column.Clear();
-            row.Clear();
-            color.Clear();
-            string name = App.Current.Properties["Name"].ToString();
-            string date = DateTime.Now.ToString("dd/MM/yyyy H:mm");
-
-            for (int i = 0; i < toutesCommandes.Count; i++)
+            try
             {
-                int row2 = int.Parse(toutesCommandes[i].ToString());
-                string decoupe_flag = decoupe_list[i].ToString();
-                string pliage_flag = pliage_list[i].ToString();
-                string soudure_flag = "";
-                if (int.Parse(soudureList[i].ToString()) == 1)
+                content.Clear();
+                column.Clear();
+                row.Clear();
+                color.Clear();
+                string name = App.Current.Properties["Name"].ToString();
+                string date = DateTime.Now.ToString("dd/MM/yyyy H:mm");
+
+                for (int i = 0; i < toutesCommandes.Count; i++)
                 {
-                    soudure_flag = soudure_list[i].ToString();
-                }
-                string traitement_flag = traitement_list[i].ToString();
-                if (GetState(5 + 9 * i) != decoupe_flag)
-                {
-                    row.Add(row2);
-                    column.Add(22);//changé
-                    if (GetState(5 + 9 * i) == "À Faire")
+                    int row2 = int.Parse(toutesCommandes[i].ToString());
+                    string decoupe_flag = decoupe_list[i].ToString();
+                    string pliage_flag = pliage_list[i].ToString();
+                    string soudure_flag = "";
+                    string traitement_flag = "";
+
+                    if (int.Parse(soudureList[i].ToString()) == 1)
                     {
-                        //excel.FillRed(row2, 11);
-                        color.Add("Red");
-                        content.Add(name + " :" + "\nÀ faire - " + date);
+                        soudure_flag = soudure_list[i].ToString();
                     }
-                    else if (GetState(5 + 9 * i) == "En Cours")
+                    if (int.Parse(traitementList[i].ToString()) == 1)
                     {
-                        //excel.FillBlue(row2, 11);
-                        color.Add("Blue");
-                        content.Add(name + " :" + "\nEn Cours - " + date);
+                        traitement_flag = soudure_list[i].ToString();
                     }
-                    else if (GetState(5 + 9 * i) == "Terminé")
+
+                    if (GetState(5 + 9 * i) != decoupe_flag)
                     {
-                        //excel.FillGreen(row2, 11);
-                        color.Add("Green");
-                        content.Add(name + " :" + "\nTerminé - " + date);
-                    }
-                    else
-                    {
-                        //excel.FillRed(row2, 11);
-                        color.Add("Red");
-                        content.Add(name + " :" + "\nÀ faire - " + date);
-                    }
-                }
-                if (GetState(6 + 9 * i) != pliage_flag)
-                {
-                    row.Add(row2);
-                    column.Add(23);//changé
-                    if (GetState(6 + 9 * i) == "À Faire")
-                    {
-                        //excel.FillRed(row2, 12);
-                        color.Add("Red");
-                        content.Add(name + " :" + "\nÀ faire - " + date);
-                    }
-                    else if (GetState(6 + 9 * i) == "En Cours")
-                    {
-                        //excel.FillBlue(row2, 12);
-                        color.Add("Blue");
-                        content.Add(name + " :" + "\nEn Cours - " + date);
-                    }
-                    else if (GetState(6 + 9 * i) == "Terminé")
-                    {
-                        //excel.FillGreen(row2, 12);
-                        color.Add("Green");
-                        content.Add(name + " :" + "\nTerminé - " + date);
-                    }
-                    else
-                    {
-                        ;
-                        //excel.FillRed(row2, 12);
-                        color.Add("Red");
-                        content.Add(name + " :" + "\nÀ faire - " + date);
-                    }
-                }
-                if (int.Parse(soudureList[i].ToString()) == 1)
-                {
-                    if (GetState(7 + 9 * i) != soudure_flag)
-                    {
+                        //Découpe
                         row.Add(row2);
-                        column.Add(24);//changé
-                        if (GetState(7 + 9 * i) == "À Faire")
+                        column.Add(hist_decoupe_column);
+                        if (GetState(5 + 9 * i) == "À Faire")
                         {
-                            //excel.FillRed(row2, 13);
+                            //excel.FillRed(row2, 11);
                             color.Add("Red");
                             content.Add(name + " :" + "\nÀ faire - " + date);
                         }
-                        else if (GetState(7 + 9 * i) == "En Cours")
+                        else if (GetState(5 + 9 * i) == "En Cours")
                         {
-                            //excel.FillBlue(row2, 13);
+                            //excel.FillBlue(row2, 11);
                             color.Add("Blue");
                             content.Add(name + " :" + "\nEn Cours - " + date);
                         }
-                        else if (GetState(7 + 9 * i) == "Terminé")
+                        else if (GetState(5 + 9 * i) == "Terminé")
                         {
-                            //excel.FillGreen(row2, 13);
+                            //excel.FillGreen(row2, 11);
                             color.Add("Green");
                             content.Add(name + " :" + "\nTerminé - " + date);
                         }
                         else
                         {
+                            //excel.FillRed(row2, 11);
                             color.Add("Red");
-                            //excel.FillRed(row2, 13);
                             content.Add(name + " :" + "\nÀ faire - " + date);
                         }
                     }
-                }
-                else
-                {
-                    row.Add(row2);
-                    column.Add(24);//changé
-                    color.Add("White");
-                    content.Add("");
-                }
-                if (GetState(8 + 9 * i) != traitement_flag)
-                {
-                    row.Add(row2);
-                    column.Add(25);//changé
-                    if (GetState(8 + 9 * i) == "À Faire")
+                    //Pliage
+                    if (GetState(6 + 9 * i) != pliage_flag)
                     {
-                        color.Add("Red");
-                        //excel.FillRed(row2, 14);
-                        content.Add(name + " :" + "\nÀ faire - " + date);
+                        row.Add(row2);
+                        column.Add(hist_pliage_column);
+                        if (GetState(6 + 9 * i) == "À Faire")
+                        {
+                            //excel.FillRed(row2, 12);
+                            color.Add("Red");
+                            content.Add(name + " :" + "\nÀ faire - " + date);
+                        }
+                        else if (GetState(6 + 9 * i) == "En Cours")
+                        {
+                            //excel.FillBlue(row2, 12);
+                            color.Add("Blue");
+                            content.Add(name + " :" + "\nEn Cours - " + date);
+                        }
+                        else if (GetState(6 + 9 * i) == "Terminé")
+                        {
+                            //excel.FillGreen(row2, 12);
+                            color.Add("Green");
+                            content.Add(name + " :" + "\nTerminé - " + date);
+                        }
+                        else
+                        {
+                            //excel.FillRed(row2, 12);
+                            color.Add("Red");
+                            content.Add(name + " :" + "\nÀ faire - " + date);
+                        }
                     }
-                    else if (GetState(8 + 9 * i) == "En Cours")
+                    //Soudure
+                    if (int.Parse(soudureList[i].ToString()) == 1)
                     {
-                        color.Add("Blue");
-                        //excel.FillBlue(row2, 14);
-                        content.Add(name + " :" + "\nEn Cours - " + date);
-                    }
-                    else if (GetState(8 + 9 * i) == "Terminé")
-                    {
-                        color.Add("Green");
-                        //excel.FillGreen(row2, 14);
-                        content.Add(name + " :" + "\nTerminé - " + date);
+                        if (GetState(7 + 9 * i) != soudure_flag)
+                        {
+                            row.Add(row2);
+                            column.Add(hist_soudure_column);
+                            if (GetState(7 + 9 * i) == "À Faire")
+                            {
+                                //excel.FillRed(row2, 13);
+                                color.Add("Red");
+                                content.Add(name + " :" + "\nÀ faire - " + date);
+                            }
+                            else if (GetState(7 + 9 * i) == "En Cours")
+                            {
+                                //excel.FillBlue(row2, 13);
+                                color.Add("Blue");
+                                content.Add(name + " :" + "\nEn Cours - " + date);
+                            }
+                            else if (GetState(7 + 9 * i) == "Terminé")
+                            {
+                                //excel.FillGreen(row2, 13);
+                                color.Add("Green");
+                                content.Add(name + " :" + "\nTerminé - " + date);
+                            }
+                            else
+                            {
+                                color.Add("Red");
+                                //excel.FillRed(row2, 13);
+                                content.Add(name + " :" + "\nÀ faire - " + date);
+                            }
+                        }
                     }
                     else
                     {
-                        color.Add("Red");
-                        //excel.FillRed(row2, 14);
-                        content.Add(name + " :" + "\nÀ faire - " + date);
+                        row.Add(row2);
+                        column.Add(hist_soudure_column);
+                        color.Add("White");
+                        content.Add("");
+                    }
+                    //Traitement
+                    if (int.Parse(traitementList[i].ToString()) == 1)
+                    {
+                        if (GetState(8 + 9 * i) != traitement_flag)
+                        {
+                            row.Add(row2);
+                            column.Add(hist_traitement_column);
+                            if (GetState(8 + 9 * i) == "À Faire")
+                            {
+                                color.Add("Red");
+                                //excel.FillRed(row2, 14);
+                                content.Add(name + " :" + "\nÀ faire - " + date);
+                            }
+                            else if (GetState(8 + 9 * i) == "En Cours")
+                            {
+                                color.Add("Blue");
+                                //excel.FillBlue(row2, 14);
+                                content.Add(name + " :" + "\nEn Cours - " + date);
+                            }
+                            else if (GetState(8 + 9 * i) == "Terminé")
+                            {
+                                color.Add("Green");
+                                //excel.FillGreen(row2, 14);
+                                content.Add(name + " :" + "\nTerminé - " + date);
+                            }
+                            else
+                            {
+                                color.Add("Red");
+                                //excel.FillRed(row2, 14);
+                                content.Add(name + " :" + "\nÀ faire - " + date);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        row.Add(row2);
+                        column.Add(hist_traitement_column);
+                        color.Add("White");
+                        content.Add("");
                     }
                 }
+                BackgroundWorker worker = new BackgroundWorker();
+                worker.RunWorkerCompleted += worker_RunWorkerCompleted;
+                worker.WorkerReportsProgress = true;
+                worker.DoWork += worker_DoWork;
+                worker.ProgressChanged += worker_ProgressChanged;
+                worker.RunWorkerAsync();
             }
-            BackgroundWorker worker = new BackgroundWorker();
-            worker.RunWorkerCompleted += worker_RunWorkerCompleted;
-            worker.WorkerReportsProgress = true;
-            worker.DoWork += worker_DoWork;
-            worker.ProgressChanged += worker_ProgressChanged;
-            worker.RunWorkerAsync();
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error : {ex.Message}");
+            }
 
         }
         
         private void worker_DoWork(object sender, DoWorkEventArgs e)
         {
-            DateTime ajd = DateTime.Now;
-            var worker = sender as BackgroundWorker;
-            worker.ReportProgress(5, String.Format("Ouverture du fichier"));
-            //Excel excel = new Excel(@"P:\Logistique et Planning cdes\PLANNING Cdes\TEST.xlsx", 1);
-            Excel excel = new Excel(@"J:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx", 1);
-            //Excel excel = new Excel(@"C:\Users\simon\Desktop\planning Cdes.xlsx", 1);
-            if (row.Count > 0)
+            try
             {
-                for (int i = 0; i < row.Count; i++)
-                {
-                    var value = ((double)i / row.Count) * 100;
-                    var pc = Convert.ToInt32(Math.Round(value, 0));
-                    worker.ReportProgress(pc, String.Format("Sauvegarde"));
-                    if (color[i] == "Red")
-                    {
-                        excel.FillRed(int.Parse(row[i].ToString()), int.Parse(column[i].ToString()) - 10);
-                    }
-                    else if (color[i] == "Blue")
-                    {
-                        excel.FillBlue(int.Parse(row[i].ToString()), int.Parse(column[i].ToString()) - 10);
-                        excel.WriteDate(int.Parse(row[i].ToString()), int.Parse(column[i].ToString()) - 4, ajd);
-                    }
-                    else if (color[i] == "Green")
-                    {
-                        excel.FillGreen(int.Parse(row[i].ToString()), int.Parse(column[i].ToString()) - 10);
-                        if (excel.IsCellDated(int.Parse(row[i].ToString()), int.Parse(column[i].ToString()) - 4))
-                        {
-                            DateTime start = excel.ReadDate(int.Parse(row[i].ToString()), int.Parse(column[i].ToString()) - 4);
-                            TimeSpan time = WorkTime(start, ajd);
-                            excel.WriteTS(int.Parse(row[i].ToString()), int.Parse(column[i].ToString()) - 4, time);
-                        }
-                        else
-                        {
-                            excel.CellOverWrite(int.Parse(row[i].ToString()), int.Parse(column[i].ToString()) - 4, "fini : " + ajd.ToString() + "\n(début inconnu)");
-                        }
+                DateTime ajd = DateTime.Now;
+                var worker = sender as BackgroundWorker;
+                worker.ReportProgress(5, String.Format("Ouverture du fichier"));
 
-                    }
-                    else if (color[i] == "White")
-                    {
-                        excel.FillWhite(int.Parse(row[i].ToString()), int.Parse(column[i].ToString()) - 10);
-                    }
-                    excel.CellWrite(int.Parse(row[i].ToString()), int.Parse(column[i].ToString()), content[i].ToString());
+                string path1 = Constants.ExcelNetworkPath_J;
+                string path2 = Constants.ExcelNetworkPath_P;
+
+                string fileToOpen = null;
+
+                // Vérifier si l'un des deux fichiers existe
+                if (File.Exists(path1))
+                {
+                    fileToOpen = path1;
                 }
-            }           
-            worker.ReportProgress(100, String.Format("Sauvegarde"));
-            excel.CloseSave();
+                else if (File.Exists(path2))
+                {
+                    fileToOpen = path2;
+                }
+
+                if (fileToOpen != null)
+                {
+                    Excel excel = new Excel(fileToOpen, 1, false);
+
+                    int column_to_fill = 12;
+                    int column_to_date = 18;
+                    if (row.Count > 0)
+                    {
+                        for (int i = 0; i < row.Count; i++)
+                        {
+                            var value = ((double)i / row.Count) * 100;
+                            var pc = Convert.ToInt32(Math.Round(value, 0));
+                            worker.ReportProgress(pc, String.Format("Sauvegarde"));
+
+                            if (column[i] == hist_decoupe_column)
+                            {
+                                column_to_fill = decoupe_column;
+                                column_to_date = temps_decoupe_column;
+                            }
+                            else if (column[i] == hist_pliage_column)
+                            {
+                                column_to_fill = pliage_column;
+                                column_to_date = temps_pliage_column;
+                            }
+                            else if (column[i] == hist_soudure_column)
+                            {
+                                column_to_fill = soudure_column;
+                                column_to_date = temps_soudure_column;
+                            }
+                            else if (column[i] == hist_traitement_column)
+                            {
+                                column_to_fill = traitement_column;
+                                column_to_date = temps_traitement_column;
+                            }
+
+                            if (color[i] == "Red")
+                            {
+                                excel.FillRed(int.Parse(row[i].ToString()), column_to_fill);
+                            }
+                            else if (color[i] == "Blue")
+                            {
+                                excel.FillBlue(int.Parse(row[i].ToString()), column_to_fill);
+                                excel.WriteDate(int.Parse(row[i].ToString()), column_to_date, ajd);
+                            }
+                            else if (color[i] == "Green")
+                            {
+                                excel.FillGreen(int.Parse(row[i].ToString()), column_to_fill);
+                                if (excel.IsCellDated(int.Parse(row[i].ToString()), column_to_date))
+                                {
+                                    DateTime start = excel.ReadDate(int.Parse(row[i].ToString()), column_to_date);
+                                    TimeSpan time = WorkTime(start, ajd);
+                                    excel.WriteTS(int.Parse(row[i].ToString()), column_to_date, time);
+                                }
+                                else
+                                {
+                                    excel.CellOverWrite(int.Parse(row[i].ToString()), column_to_date, "fini : " + ajd.ToString() + "\n(début inconnu)");
+                                }
+
+                            }
+                            else if (color[i] == "White")
+                            {
+                                excel.FillWhite(int.Parse(row[i].ToString()), column_to_fill);
+                            }
+                            excel.CellWrite(int.Parse(row[i].ToString()), int.Parse(column[i].ToString()), content[i].ToString());
+                        }
+                    }
+                    worker.ReportProgress(100, String.Format("Sauvegarde"));
+                    excel.CloseSave();
+                }
+                else
+                {
+                    MessageBox.Show("Aucun fichier n'a été trouvé aux chemins spécifiés.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error : {ex.Message}");
+            }
         }
         private void worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
@@ -744,117 +917,124 @@ namespace projet
         }
         public TimeSpan WorkTime(DateTime startDate, DateTime endDate)
         {
-            DateTime start = startDate.Date;
-            DateTime end = endDate.Date;
             TimeSpan total = new TimeSpan();
-            TimeSpan startTime = new TimeSpan();
-            TimeSpan endTime = new TimeSpan();
-            TimeSpan matin = new TimeSpan(0, 8, 0, 0);
-            TimeSpan pauseMidi = new TimeSpan(0, 1, 30, 0);
-            TimeSpan apresmidi = new TimeSpan(0, 3, 00, 0);
-            TimeSpan seizeT = new TimeSpan(0, 16, 30, 0);
-            TimeSpan midi = new TimeSpan(0, 12, 0, 0);
-            TimeSpan treizeT = new TimeSpan(0, 13, 30, 0);
-            TimeSpan soir = new TimeSpan(0, 9, 30, 0);
-            TimeSpan deuxJours = new TimeSpan(2, 0, 0, 0);
-            TimeSpan journee = new TimeSpan(0, 7, 0, 0);
-            TimeSpan hed = new TimeSpan(0, 8, 30, 0);
+            try
+            {
+                DateTime start = startDate.Date;
+                DateTime end = endDate.Date;
+                TimeSpan startTime = new TimeSpan();
+                TimeSpan endTime = new TimeSpan();
+                TimeSpan matin = new TimeSpan(0, 8, 0, 0);
+                TimeSpan pauseMidi = new TimeSpan(0, 1, 30, 0);
+                TimeSpan apresmidi = new TimeSpan(0, 3, 00, 0);
+                TimeSpan seizeT = new TimeSpan(0, 16, 30, 0);
+                TimeSpan midi = new TimeSpan(0, 12, 0, 0);
+                TimeSpan treizeT = new TimeSpan(0, 13, 30, 0);
+                TimeSpan soir = new TimeSpan(0, 9, 30, 0);
+                TimeSpan deuxJours = new TimeSpan(2, 0, 0, 0);
+                TimeSpan journee = new TimeSpan(0, 7, 0, 0);
+                TimeSpan hed = new TimeSpan(0, 8, 30, 0);
 
-            int year = DateTime.Now.Year;
-            int count = 0;
-            DateTime date1 = new DateTime(year, 01, 01);
-            DateTime date2 = new DateTime(year, 05, 01);
-            DateTime date3 = new DateTime(year, 05, 08);
-            DateTime date4 = new DateTime(year, 07, 14);
-            DateTime date5 = new DateTime(year, 09, 15);
-            DateTime date6 = new DateTime(year, 11, 01);
-            DateTime date7 = new DateTime(year, 11, 11);
-            DateTime date8 = new DateTime(year, 12, 25);
-            List<DateTime> excludeDates = new List<DateTime>()
+                int year = DateTime.Now.Year;
+                int count = 0;
+                DateTime date1 = new DateTime(year, 01, 01);
+                DateTime date2 = new DateTime(year, 05, 01);
+                DateTime date3 = new DateTime(year, 05, 08);
+                DateTime date4 = new DateTime(year, 07, 14);
+                DateTime date5 = new DateTime(year, 09, 15);
+                DateTime date6 = new DateTime(year, 11, 01);
+                DateTime date7 = new DateTime(year, 11, 11);
+                DateTime date8 = new DateTime(year, 12, 25);
+                List<DateTime> excludeDates = new List<DateTime>()
             {
                 date1,date2,date3,date4,date5,date6,date7,date8
             };
-            //////////////////////////////////////////////////
-            ///
-            TimeSpan diff = endDate - startDate;
-            if (startDate.Date == endDate.Date)
-            {
-                if (startDate.TimeOfDay < midi && endDate.TimeOfDay <= midi)
+                //////////////////////////////////////////////////
+                ///
+                TimeSpan diff = endDate - startDate;
+                if (startDate.Date == endDate.Date)
                 {
-                    total = diff;
-                }
-                else if (startDate.TimeOfDay >= treizeT && endDate.TimeOfDay > treizeT)
-                {
-                    total = diff;
-                }
-                else if (startDate.TimeOfDay <= midi && endDate.TimeOfDay >= treizeT)
-                {
-                    total = diff - pauseMidi;
-                }
-                else
-                {
-                    total = diff;
-                }
-            }
-            else if (endDate.Date - startDate.Date >= deuxJours)
-            {
-                for (DateTime index = start.AddDays(1); index < end; index = index.AddDays(1))
-                {
-                    if (index.DayOfWeek != DayOfWeek.Sunday && index.DayOfWeek != DayOfWeek.Saturday)
+                    if (startDate.TimeOfDay < midi && endDate.TimeOfDay <= midi)
                     {
-                        bool excluded = false;
-                        for (int i = 0; i < excludeDates.Count; i++)
-                        {
-                            if (index.Date.CompareTo(excludeDates[i].Date) == 0)
-                            {
-                                excluded = true;
-                                break;
-                            }
-                        }
-
-                        if (!excluded)
-                        {
-                            total += journee;
-                        }
+                        total = diff;
+                    }
+                    else if (startDate.TimeOfDay >= treizeT && endDate.TimeOfDay > treizeT)
+                    {
+                        total = diff;
+                    }
+                    else if (startDate.TimeOfDay <= midi && endDate.TimeOfDay >= treizeT)
+                    {
+                        total = diff - pauseMidi;
+                    }
+                    else
+                    {
+                        total = diff;
                     }
                 }
-                if (startDate.TimeOfDay <= midi)
+                else if (endDate.Date - startDate.Date >= deuxJours)
                 {
-                    startTime = midi - startDate.TimeOfDay + apresmidi;
+                    for (DateTime index = start.AddDays(1); index < end; index = index.AddDays(1))
+                    {
+                        if (index.DayOfWeek != DayOfWeek.Sunday && index.DayOfWeek != DayOfWeek.Saturday)
+                        {
+                            bool excluded = false;
+                            for (int i = 0; i < excludeDates.Count; i++)
+                            {
+                                if (index.Date.CompareTo(excludeDates[i].Date) == 0)
+                                {
+                                    excluded = true;
+                                    break;
+                                }
+                            }
+
+                            if (!excluded)
+                            {
+                                total += journee;
+                            }
+                        }
+                    }
+                    if (startDate.TimeOfDay <= midi)
+                    {
+                        startTime = midi - startDate.TimeOfDay + apresmidi;
+                    }
+                    else
+                    {
+                        startTime = seizeT - startDate.TimeOfDay;
+                    }
+                    if (endDate.TimeOfDay >= treizeT)
+                    {
+                        endTime = endDate.TimeOfDay - soir;
+                    }
+                    else
+                    {
+                        endTime = endDate.TimeOfDay - matin;
+                    }
+                    total += startTime + endTime;
                 }
                 else
                 {
-                    startTime = seizeT - startDate.TimeOfDay;
+                    if (startDate.TimeOfDay <= midi)
+                    {
+                        startTime = midi - startDate.TimeOfDay + apresmidi;
+                    }
+                    else
+                    {
+                        startTime = seizeT - startDate.TimeOfDay;
+                    }
+                    if (endDate.TimeOfDay >= treizeT)
+                    {
+                        endTime = endDate.TimeOfDay - soir;
+                    }
+                    else
+                    {
+                        endTime = endDate.TimeOfDay - matin;
+                    }
+                    total = startTime + endTime;
                 }
-                if (endDate.TimeOfDay >= treizeT)
-                {
-                    endTime = endDate.TimeOfDay - soir;
-                }
-                else
-                {
-                    endTime = endDate.TimeOfDay - matin;
-                }
-                total += startTime + endTime;
             }
-            else
+            catch (Exception ex)
             {
-                if (startDate.TimeOfDay <= midi)
-                {
-                    startTime = midi - startDate.TimeOfDay + apresmidi;
-                }
-                else
-                {
-                    startTime = seizeT - startDate.TimeOfDay;
-                }
-                if (endDate.TimeOfDay >= treizeT)
-                {
-                    endTime = endDate.TimeOfDay - soir;
-                }
-                else
-                {
-                    endTime = endDate.TimeOfDay - matin;
-                }
-                total = startTime + endTime;
+                MessageBox.Show($"Error : {ex.Message}");
             }
             return total;
         }

@@ -7,6 +7,7 @@ using System.Windows;
 using Microsoft.Office.Interop.Excel;
 using _Excel = Microsoft.Office.Interop.Excel;
 using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace projet
 { 
@@ -16,16 +17,29 @@ namespace projet
         _Excel.Application excel = new _Excel.Application();
         Workbook wb;
         Worksheet ws;
-        public Excel (string path, int sheet)
+        private Dictionary<string, int> columnNumbers = new Dictionary<string, int>();
+
+        public Excel (string path, int sheet, bool read_only)
         {
             Object pwd = "bystronic";
             Object MissingValue = System.Reflection.Missing.Value;
             this.path= path;
+
             excel.Visible = false;
-            excel.ScreenUpdating = false;          
-            wb = excel.Workbooks.Open(path, MissingValue, MissingValue, MissingValue, pwd);
-            wb.Windows[1].WindowState = XlWindowState.xlMinimized;
-            ws = wb.Worksheets[sheet];
+            excel.ScreenUpdating = false;
+
+            try
+            {
+                wb = excel.Workbooks.Open(path, MissingValue, read_only, MissingValue, pwd, MissingValue, true); 
+                wb.Windows[1].WindowState = XlWindowState.xlMinimized;
+                ws = wb.Worksheets[sheet];
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening Excel file: {ex.Message}");
+                Dispose();
+            }
+
         }
         public string ReadCell(int i, int j)
         {
@@ -38,20 +52,58 @@ namespace projet
                 return "?";
         }
         public void CloseFile()
-        {          
-            wb.Close(false);
-            excel.Quit();
-            Marshal.ReleaseComObject(wb);
-            Marshal.ReleaseComObject(ws);
-            Marshal.ReleaseComObject(excel);
+        {
+            try
+            {
+                // Fermer la feuille de calcul
+                Marshal.ReleaseComObject(ws);  // Libérer la feuille de calcul
+
+                // Fermer le classeur
+                wb.Close(false);  // Fermer le classeur sans enregistrer
+                Marshal.ReleaseComObject(wb);  // Libérer le classeur
+            }
+            catch (Exception ex)
+            {
+                // Log or handle exceptions if necessary
+                MessageBox.Show("Une erreur est survenue : " + ex.Message, "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                // Quitter l'application Excel
+                excel.Quit();  // Fermer l'application Excel
+                Marshal.ReleaseComObject(excel);  // Libérer l'application Excel
+
+                // Forcer la collecte des objets COM et attendre la fin du processus de collecte
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
         }
         public void CloseSave()
-        {          
-            wb.Close(true);
-            excel.Quit();
-            Marshal.ReleaseComObject(wb);
-            Marshal.ReleaseComObject(ws);
-            Marshal.ReleaseComObject(excel);
+        {
+            try
+            {
+                // Fermer la feuille de calcul
+                Marshal.ReleaseComObject(ws);  // Libérer la feuille de calcul
+
+                // Fermer le classeur
+                wb.Close(true);  // Fermer le classeur sans enregistrer
+                Marshal.ReleaseComObject(wb);  // Libérer le classeur
+            }
+            catch (Exception ex)
+            {
+                // Log or handle exceptions if necessary
+                MessageBox.Show("Une erreur est survenue : " + ex.Message, "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                // Quitter l'application Excel
+                excel.Quit();  // Fermer l'application Excel
+                Marshal.ReleaseComObject(excel);  // Libérer l'application Excel
+
+                // Forcer la collecte des objets COM et attendre la fin du processus de collecte
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
         }
         public int GetRange()
         {
@@ -176,7 +228,9 @@ namespace projet
         }
         public bool IsSent(int i)
         {
-            if (ws.Cells[i,16].Value2 != null)
+            //Départ Livraison
+            int depart_column = GetColumnNumber("DEPART");
+            if (ws.Cells[i, depart_column].Value2 != null)
             {
                 return true;
             }
@@ -202,6 +256,58 @@ namespace projet
                     count++;
                 }
             }          
+        }
+        public void Dispose()
+        {
+            try
+            {
+                if (ws != null)
+                {
+                    Marshal.ReleaseComObject(ws);
+                    ws = null;
+                }
+                if (wb != null)
+                {
+                    wb.Close(false); // Fermer sans sauvegarder
+                    Marshal.ReleaseComObject(wb);
+                    wb = null;
+                }
+                if (excel != null)
+                {
+                    excel.Quit();
+                    Marshal.ReleaseComObject(excel);
+                    excel = null;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Erreur lors de la libération des ressources COM : " + ex.Message);
+            }
+            finally
+            {
+                // Appeler GC.Collect() pour forcer la collecte des objets non managés
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+        }
+        public int GetColumnNumber(string title_target)
+        {
+            // Suppose que la première ligne contient les titres de colonnes
+            var firstRow = ws.Rows[1];  // Récupérer la première ligne (titres)
+            int column = 1;
+
+            for (int i = 1; i <= firstRow.Columns.Count; i++)
+            {
+                string title = firstRow.Cells[1, i].Value2.ToString().Trim();
+
+                // Vérifier si le titre correspond à un des titres recherchés
+                if (title == title_target)
+                {
+                    column = i;
+                    break;
+                }
+            }
+            return column;
         }
     }
 }

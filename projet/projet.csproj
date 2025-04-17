@@ -7,6 +7,17 @@
     <UseWPF>true</UseWPF>
     <ApplicationIcon>icone2.ico</ApplicationIcon>
     <UseWindowsForms>False</UseWindowsForms>
+    <!-- Informations de version -->
+	<AssemblyName>Meerkat</AssemblyName>
+    <AssemblyTitle>Meerkat</AssemblyTitle>
+    <AssemblyDescription>Gestion du planning de production</AssemblyDescription>
+    <Company>SAEMT</Company>
+    <Product>Meerkat</Product>
+    <Copyright>© 2025 MASURIER Simon</Copyright>
+    <Version>1.2.0.0</Version>
+    <FileVersion>1.2.0.0</FileVersion>
+    <InformationalVersion>1.2.0</InformationalVersion>
+ 
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -36,6 +47,10 @@
 
   <ItemGroup>
     <Content Include="icone2.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.104.2" />
   </ItemGroup>
 
   <ItemGroup>

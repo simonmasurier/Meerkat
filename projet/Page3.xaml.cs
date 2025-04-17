@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,9 +23,10 @@ namespace projet
     /// </summary>
     public partial class Page3 : Page
     {
-        ArrayList list = new ArrayList();
-        ArrayList erreurs = new ArrayList();
-        ArrayList rows = new ArrayList();
+        private List<string> list = new List<string>();
+        private List<string> erreurs = new List<string>();
+        private List<int> rows = new List<int>();
+
         public Page3()
         {
             InitializeComponent();
@@ -37,7 +39,8 @@ namespace projet
         {
             if (!String.IsNullOrWhiteSpace(Addbar.Text))
             {
-                if (!ListView1.Items.Contains(Addbar.Text))
+                string newCommande = Addbar.Text.Trim();
+                if (!string.IsNullOrWhiteSpace(newCommande))
                 {
                     ListView1.Items.Add(Addbar.Text);
                     list.Add(Addbar.Text);  
@@ -69,12 +72,13 @@ namespace projet
         }
         private void supp_Click(object sender, RoutedEventArgs e)
         {
-            try
+            if (ListView1.SelectedItem != null)
             {
-                list.Remove(ListView1.Items[ListView1.Items.IndexOf(ListView1.SelectedItem)].ToString());
-                ListView1.Items.RemoveAt(ListView1.Items.IndexOf(ListView1.SelectedItem));
+                string selectedItem = ListView1.SelectedItem.ToString();
+                list.Remove(selectedItem);
+                ListView1.Items.Remove(selectedItem);
             }
-            catch
+            else
             {
                 MessageBox.Show(Application.Current.MainWindow, "Veuillez sélectionner un élément à supprimer");
             }
@@ -87,6 +91,7 @@ namespace projet
                 statusProgress.Foreground = Brushes.LimeGreen;
                 statusProgress.Text = "Chargement";
                 Progress.Visibility = Visibility.Visible;
+
                 BackgroundWorker worker = new BackgroundWorker();
                 worker.RunWorkerCompleted += worker_RunWorkerCompleted;
                 worker.WorkerReportsProgress = true;
@@ -117,38 +122,81 @@ namespace projet
 
         private void worker_DoWork(object sender, DoWorkEventArgs e)
         {
-            erreurs.Clear();
-            rows.Clear();
-            var worker = sender as BackgroundWorker;
-            worker.ReportProgress(5, "Ouverture du planning");
-
-            //Excel excel = new Excel(@"P:\Logistique et Planning cdes\PLANNING Cdes\TEST.xlsx", 1);
-            Excel excel = new Excel(@"J:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx", 1);
-            //Excel excel = new Excel(@"C:\Users\simon\Desktop\planning Cdes.xlsx", 1);
-            int range = excel.GetRange();;
-                                     
-            for (int j = 0; j < list.Count; j++)
+            try
             {
-                int flag = 0;
-                for (int i = 2; i <= range; i++)
+                erreurs.Clear();
+                rows.Clear();
+                var worker = sender as BackgroundWorker;
+                worker.ReportProgress(5, "Ouverture du planning");
+
+                string path1 = Constants.ExcelNetworkPath_J;
+                string path2 = Constants.ExcelNetworkPath_P;
+
+                string fileToOpen = null;
+
+                // Vérifier si l'un des deux fichiers existe
+                if (File.Exists(path1))
                 {
-                    var value = ((double)i / range) * 100;
-                    var pc = Convert.ToInt32(Math.Round(value, 0));
-                    worker.ReportProgress(pc, String.Format("Recherche de la commande : " + (j + 1).ToString() + "/" + list.Count.ToString()));
-                    if (list[j].ToString() == excel.ReadCell(i,1).ToString())
-                    {
-                        flag = 1;
-                        rows.Add(i);
-                        break;
-                    }
+                    fileToOpen = path1;
                 }
-                if (flag == 0)
+                else if (File.Exists(path2))
                 {
-                    erreurs.Add(list[j]);
+                    fileToOpen = path2;
+                }
+
+                if (fileToOpen != null)
+                {
+                    Excel excel = new Excel(fileToOpen, 1, true);
+
+                    int num_commande_column = 1;
+                    try
+                    {
+                        num_commande_column = excel.GetColumnNumber("N° Cde");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error : {ex.Message}");
+                    }
+
+                    int range = excel.GetRange(); ;
+                    int progressInterval = 20;
+
+                    for (int j = 0; j < list.Count; j++)
+                    {
+                        int flag = 0;
+                        for (int i = 2; i <= range; i++)
+                        {
+                            if (i % progressInterval == 0)
+                            {
+                                var value = ((double)i / range) * 100;
+                                var pc = Convert.ToInt32(Math.Round(value, 0));
+                                worker.ReportProgress(pc, $"Recherche de la commande : {j + 1}/{list.Count}");
+                            }
+                            //Numéro Commande
+                            if (list[j].ToString() == excel.ReadCell(i, num_commande_column).ToString())
+                            {
+                                flag = 1;
+                                rows.Add(i);
+                                break;
+                            }
+                        }
+                        if (flag == 0)
+                        {
+                            erreurs.Add(list[j]);
+                        }
+                    }
+                    worker.ReportProgress(100, String.Format("Recherche Terminée"));
+                    excel.CloseFile();
+                }
+                else
+                {
+                    MessageBox.Show("Aucun fichier n'a été trouvé aux chemins spécifiés.");
                 }
             }
-            worker.ReportProgress(100, String.Format("Recherche Terminée"));
-            excel.CloseFile();             
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error : {ex.Message}");
+            }
         }
 
         private void worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
