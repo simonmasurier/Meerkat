@@ -64,8 +64,8 @@ namespace projet
             commandes = App.Current.Properties["Array"] as ArrayList;
 
             //Excel excel = new Excel(@"P:\Logistique et Planning cdes\PLANNING Cdes\TEST.xlsx", 1);
-            Excel excel = new Excel(@"J:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx", 1);
-            //Excel excel = new Excel(@"C:\Users\simon\Desktop\planning Cdes.xlsx", 1);
+            //Excel excel = new Excel(@"J:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx", 1);
+            Excel excel = new Excel(@"C:\Users\Simon\Documents\Meerkat\test.xlsx", 1);
             ArrayList rowIndex= new ArrayList();
             int count = -1;
             for (int i = 0; i < commandes.Count; i++)
@@ -691,8 +691,8 @@ namespace projet
             var worker = sender as BackgroundWorker;
             worker.ReportProgress(5, String.Format("Ouverture du fichier"));
             //Excel excel = new Excel(@"P:\Logistique et Planning cdes\PLANNING Cdes\TEST.xlsx", 1);
-            Excel excel = new Excel(@"J:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx", 1);
-            //Excel excel = new Excel(@"C:\Users\simon\Desktop\planning Cdes.xlsx", 1);
+            //Excel excel = new Excel(@"J:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx", 1);
+            Excel excel = new Excel(@"C:\Users\Simon\Documents\Meerkat\test.xlsx", 1);
             if (row.Count > 0)
             {
                 for (int i = 0; i < row.Count; i++)

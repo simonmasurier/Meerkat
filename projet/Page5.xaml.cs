@@ -124,8 +124,8 @@ namespace projet
 
 
             //Excel excel = new Excel(@"P:\Logistique et Planning cdes\PLANNING Cdes\TEST.xlsx", 1);
-            Excel excel = new Excel(@"J:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx", 1);
-            //Excel excel = new Excel(@"C:\Users\simon\Desktop\planning Cdes.xlsx", 1);
+            //Excel excel = new Excel(@"J:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx", 1);
+            Excel excel = new Excel(@"C:\Users\Simon\Documents\Meerkat\test.xlsx", 1);
 
             int range = excel.GetRange();
 

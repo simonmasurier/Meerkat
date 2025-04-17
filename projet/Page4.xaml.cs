@@ -36,8 +36,8 @@ namespace projet
             commandes = App.Current.Properties["Array"] as ArrayList;
             
             //Excel excel = new Excel(@"P:\Logistique et Planning cdes\PLANNING Cdes\TEST.xlsx", 1);
-            Excel excel = new Excel(@"J:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx", 1);
-            //Excel excel = new Excel(@"C:\Users\simon\Desktop\planning Cdes.xlsx", 1);
+            //Excel excel = new Excel(@"J:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx", 1);
+            Excel excel = new Excel(@"C:\Users\Simon\Documents\Meerkat\test.xlsx", 1);
 
             ArrayList rowIndex = new ArrayList();
             ArrayList toutesCommandes = new ArrayList();
@@ -271,8 +271,8 @@ namespace projet
             var worker = sender as BackgroundWorker;
 
             //Excel excel = new Excel(@"P:\Logistique et Planning cdes\PLANNING Cdes\TEST.xlsx", 1);
-            Excel excel = new Excel(@"J:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx", 1);
-            //Excel excel = new Excel(@"C:\Users\simon\Desktop\planning Cdes.xlsx", 1);
+            //Excel excel = new Excel(@"J:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx", 1);
+            Excel excel = new Excel(@"C:\Users\Simon\Documents\Meerkat\test.xlsx", 1);
             int i = 0;
             foreach (object item in saved)
             {

@@ -123,8 +123,8 @@ namespace projet
             worker.ReportProgress(5, "Ouverture du planning");
 
             //Excel excel = new Excel(@"P:\Logistique et Planning cdes\PLANNING Cdes\TEST.xlsx", 1);
-            Excel excel = new Excel(@"J:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx", 1);
-            //Excel excel = new Excel(@"C:\Users\simon\Desktop\planning Cdes.xlsx", 1);
+            //Excel excel = new Excel(@"J:\Logistique et Planning cdes\PLANNING Cdes\planning Cdes.xlsx", 1);
+            Excel excel = new Excel(@"C:\Users\Simon\Documents\Meerkat\test.xlsx", 1);
             int range = excel.GetRange();;
                                      
             for (int j = 0; j < list.Count; j++)
